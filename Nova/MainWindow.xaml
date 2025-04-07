@@ -9,4 +9,5 @@
     mc:Ignorable="d"
     Title="Nova">
 
+    <Frame x:Name="WindowFrame"/>
 </Window>

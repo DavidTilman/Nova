@@ -13,62 +13,55 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
-
-using Nova.lib;
-
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+using Nova.lib;
+using Nova.Pages;
 
-namespace Nova
+namespace Nova;
+
+public sealed partial class MainWindow : Window
 {
-    /// <summary>
-    /// An empty window that can be used on its own or navigated to within a Frame.
-    /// </summary>
-    public sealed partial class MainWindow : Window
+    private bool inError = true;
+
+    public MainWindow()
     {
-        private bool inError = true;
+        this.InitializeComponent();
 
-        public MainWindow()
+        string query = "SELECT * FROM Win32_VolumeChangeEvent WHERE EventType = 2 OR EventType = 3";
+        ManagementEventWatcher watcher = new ManagementEventWatcher(query);
+        watcher.EventArrived += VolumeChangedEventHandler;
+        watcher.Start();
+
+        SetMainPage();
+    }
+
+    private void VolumeChangedEventHandler(object sender, EventArrivedEventArgs e)
+    {
+        SetMainPage();
+    }
+
+    private void SetMainPage()
+    {
+        if (!NovaDrive.DriveConnected)
         {
-            this.InitializeComponent();
-
-            string query = "SELECT * FROM Win32_VolumeChangeEvent WHERE EventType = 2 OR EventType = 3";
-            ManagementEventWatcher watcher = new ManagementEventWatcher(query);
-            watcher.EventArrived += VolumeChangedEventHandler;
-            watcher.Start();
-
-            SetMainPage();
+            this.DispatcherQueue.TryEnqueue(() =>
+            {
+                this.WindowFrame.Navigate(typeof(ErrorPage), "No N:/NOVA drive found.");
+            });
+            inError = true;
         }
-
-        private void VolumeChangedEventHandler(object sender, EventArrivedEventArgs e)
+        else
         {
-            SetMainPage();
-        }
-
-        private void SetMainPage()
-        {
-            if (!NovaDrive.DriveConnected)
+            if (inError)
             {
                 this.DispatcherQueue.TryEnqueue(() =>
                 {
-                    this.Content = new ErrorPage("No N:\\NOVA drive was found.");
+                    this.WindowFrame.Navigate(typeof(MainPage));
                 });
-                inError = true;
             }
-            else
-            {
-                if (inError)
-                {
-                    this.DispatcherQueue.TryEnqueue(() =>
-                    {
-                        this.Content = new MainPage();
-                    });
-                }
-                inError = false;
-            }
+            inError = false;
         }
     }
 }
