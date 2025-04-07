@@ -24,6 +24,6 @@
                     Icon="People"/>
             </NavigationView.MenuItems>
         </NavigationView>
-        <Frame x:Name="MainFrame"/>
+        <Frame x:Name="MainFrame" Margin="10"/>
     </StackPanel>
 </Page>
