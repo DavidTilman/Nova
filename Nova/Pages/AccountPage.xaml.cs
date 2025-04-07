@@ -8,7 +8,6 @@ using Microsoft.UI.Xaml.Navigation;
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -16,25 +15,17 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
+// To learn more about WinUI, the WinUI project structure,
+// and more about our project templates, see: http://aka.ms/winui-project-info.
+
 namespace Nova.Pages;
-public sealed partial class MainPage : Page
+/// <summary>
+/// An empty page that can be used on its own or navigated to within a Frame.
+/// </summary>
+public sealed partial class AccountPage : Page
 {
-    public MainPage()
+    public AccountPage()
     {
         this.InitializeComponent();
-    }
-
-    private void NavigationView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
-    {
-        Type pageType = null;
-        if ((string)args.InvokedItem == "Accounts")
-        {
-            Debug.WriteLine("Accounts");
-            pageType = typeof(AccountPage);
-        }
-        if (pageType != null)
-        {
-            this.MainFrame.Navigate(pageType);
-        }
     }
 }

@@ -10,13 +10,18 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <StackPanel>
-        <NavigationView PaneDisplayMode="Top" IsBackButtonVisible="Collapsed" IsSettingsVisible="False">
+        <NavigationView PaneDisplayMode="Top" IsBackButtonVisible="Collapsed" IsSettingsVisible="False" ItemInvoked="NavigationView_ItemInvoked">
             <NavigationView.MenuItems>
                 <NavigationViewItem
-                x:Name="HomeItem"
-                Content="Home"
-                Icon="Home"
-                IsSelected="True"/>
+                    x:Name="HomeItem"
+                    Content="Home"
+                    Icon="Home"
+                    IsSelected="True"/>
+                <NavigationViewItem
+                    x:Name="AccountsItem"
+                    Content="Accounts"
+                    Tag="AccountsPage"
+                    Icon="People"/>
             </NavigationView.MenuItems>
         </NavigationView>
         <Frame x:Name="MainFrame"/>

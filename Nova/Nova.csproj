@@ -15,6 +15,7 @@
   <ItemGroup>
     <None Remove="ErrorPage.xaml" />
     <None Remove="MainPage.xaml" />
+    <None Remove="Pages\AccountPage.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -55,7 +56,9 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Pages\" />
+    <Page Update="Pages\AccountPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <!--
