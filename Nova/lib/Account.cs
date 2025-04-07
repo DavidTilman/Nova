@@ -15,7 +15,18 @@ public enum AccountType
 }
 public class Account
 {
-    public required string AccountName { get; set; }
-    public required string AccountProvider { get; set; }
-    public required AccountType AccountType { get; set; }
+    public string AccountName { get; set; }
+
+    public double Balance { get; set; }
+
+    public string BalanceString => Balance.ToString("C2");
+    public string AccountProvider { get; set; }
+    public AccountType AccountType { get; set; }
+
+    public Account()
+    {
+        AccountName = string.Empty;
+        AccountProvider = string.Empty;
+        AccountType = AccountType.None;
+    }
 }

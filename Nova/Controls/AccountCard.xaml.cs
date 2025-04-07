@@ -16,18 +16,17 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 
 using Nova.lib;
-using Nova.Controls;
 
-namespace Nova.Pages;
-/// <summary>
-/// An empty page that can be used on its own or navigated to within a Frame.
-/// </summary>
-public sealed partial class AccountPage : Page
+// To learn more about WinUI, the WinUI project structure,
+// and more about our project templates, see: http://aka.ms/winui-project-info.
+
+namespace Nova.Controls;
+public sealed partial class AccountCard : UserControl
 {
-    public AccountPage()
+    public Account Account { get; set; }
+    public AccountCard(Account account)
     {
         this.InitializeComponent();
-
-        AccountsManager.Accounts.ForEach((Account a) => AccountCardStackPanel.Children.Add(new AccountCard(a)));
+        this.Account = account;
     }
 }
