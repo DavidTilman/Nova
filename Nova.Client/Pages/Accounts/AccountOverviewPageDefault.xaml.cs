@@ -10,6 +10,7 @@ using Nova.Database;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -30,11 +31,14 @@ public sealed partial class AccountOverviewPageDefault : Page
     public AccountOverviewPageDefault()
     {
         this.InitializeComponent();
-        List<AccountEvent> events = AccountManager.GetAccountEvents(10);
+        List<AccountEvent> events = AccountManager.GetAllAccountEvents();
         foreach (AccountEvent accountEvent in events)
         {
             AccountEventsListView.Items.Add(
                 new Controls.AccountEventCardUserControl(accountEvent, true));
         }
+        NumberAccountsTextBlock.Text = AccountManager.GetAccounts().Count.ToString();
+        AllTimeIncomeTextBlock.Text = ((from AccountEvent e in events where e.EventType == AccountEventType.Income select e.Value).Sum() ?? 0).ToString("C");
+        AllTimeSpendingTextBlock.Text = ((from AccountEvent e in events where e.EventType == AccountEventType.Payment select e.Value).Sum() ?? 0).ToString("C");
     }
 }

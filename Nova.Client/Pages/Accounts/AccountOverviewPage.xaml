@@ -136,7 +136,10 @@
 
                 <chart:SfCartesianChart  x:Name="BalanceChart" Margin="0,8"/>
             </StackPanel>
-            <ListView x:Name="AccountEventsListView" Grid.Column="1" VerticalAlignment="Center" SelectionMode="None"/>
+            
+            <ScrollViewer Grid.Column="1">
+                <ListView x:Name="AccountEventsListView" VerticalAlignment="Center" SelectionMode="None"/>
+            </ScrollViewer>
         </Grid>
     </Border>
 </Page>

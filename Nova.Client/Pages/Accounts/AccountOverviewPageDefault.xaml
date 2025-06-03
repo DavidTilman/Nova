@@ -10,38 +10,61 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Border Margin="16" Background="{ThemeResource CardBackgroundFillColorDefault}" CornerRadius="{ThemeResource OverlayCornerRadius}">
-        <Grid Margin="16" ColumnSpacing="16">
+        <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="1*" />
             </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="auto"/>
-                <RowDefinition Height="auto"/>
-                <RowDefinition Height="auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-            <TextBlock Text="Overview" Style="{ThemeResource TitleLargeTextBlockStyle}" Grid.ColumnSpan="2" HorizontalAlignment="Center"/>
-            <TextBlock
-                Grid.Row="1"
-                Style="{ThemeResource TitleTextBlockStyle}"
-                Text="Net Worth:"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Center"/>
+            <StackPanel>
+                <TextBlock Text="Overview" Style="{ThemeResource TitleLargeTextBlockStyle}" HorizontalAlignment="Center"/>
 
-            <TextBlock
-                Grid.Row="1"
-                Grid.Column="1"
-                Style="{ThemeResource TitleTextBlockStyle}"
-                Text="{x:Bind FormattedNetWorth}"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"/>
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*" />
+                        <ColumnDefinition Width="1*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock
+                        Style="{ThemeResource TitleTextBlockStyle}"
+                        Text="Net Worth:"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"/>
 
-            <Border  Margin="0,16,0,0" Grid.Row="2" Grid.ColumnSpan="2" BorderBrush="{ThemeResource AccentAAFillColorDefaultBrush}" Height="1" BorderThickness="1"/>
+                    <TextBlock
+                        Grid.Column="1"
+                        Style="{ThemeResource TitleTextBlockStyle}"
+                        Text="{x:Bind FormattedNetWorth}"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"/>
+                </Grid>
 
-            <ScrollView Grid.Row="3" Grid.ColumnSpan="2" Margin="0,8,0,0" VerticalAlignment="Top">
+                <Border  Margin="0,16,0,0" Grid.Row="2" Grid.ColumnSpan="2" BorderBrush="{ThemeResource AccentAAFillColorDefaultBrush}" Height="1" BorderThickness="1"/>
+
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*" />
+                        <ColumnDefinition Width="1*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto" />
+                        <RowDefinition Height="auto" />
+                        <RowDefinition Height="auto" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="Accounts:" HorizontalAlignment="Right"/>
+                    <TextBlock Grid.Column="1" x:Name="NumberAccountsTextBlock"/>
+                    
+                    <TextBlock Text="All time income:" HorizontalAlignment="Right" Grid.Row="1"/>
+                    <TextBlock Grid.Column="1" x:Name="AllTimeIncomeTextBlock" Grid.Row="1" Foreground="{ThemeResource SystemFillColorSuccess}"/>
+
+                    <TextBlock Text="All time spending:" HorizontalAlignment="Right" Grid.Row="2"/>
+                    <TextBlock Grid.Column="1" x:Name="AllTimeSpendingTextBlock" Grid.Row="2" Foreground="{ThemeResource SystemFillColorCritical}"/>
+                </Grid>
+                
+            </StackPanel>
+            <ScrollViewer Grid.Column="1" VerticalAlignment="Center">
                 <ListView x:Name="AccountEventsListView" SelectionMode="None"/>
-            </ScrollView>
+            </ScrollViewer>
         </Grid>
     </Border>
 </Page>

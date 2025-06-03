@@ -333,6 +333,52 @@ public static class AccountManager
         return accountEvents;
     }
 
+    public static List<AccountEvent> GetAllAccountEvents()
+    {
+        if (Cache.AccountEvents != null)
+        {
+            Debug.WriteLine("Returning cached account events.");
+            return Cache.AccountEvents.ToList();
+        }
+        if (connection.State != System.Data.ConnectionState.Open)
+            throw new InvalidOperationException("Database connection is not open.");
+        string query =
+            """
+                SELECT * 
+                FROM AccountEvents 
+                ORDER BY TimeStamp DESC;
+            """;
+        List<AccountEvent> accountEvents = new List<AccountEvent>();
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            using (SqlDataReader reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    int accountId = reader.GetInt32(1);
+                    AccountEventType eventType = (AccountEventType) reader.GetInt32(2);
+                    double? value = reader.IsDBNull(3) ? null : reader.GetDouble(3);
+                    string? secondaryAccountName = reader.IsDBNull(4) ? null : reader.GetString(4);
+                    DateTime timeStamp = reader.GetDateTime(5);
+                    double newBalance = reader.GetDouble(6);
+                    double oldbalance = reader.GetDouble(7);
+                    AccountEvent accountEvent = new AccountEvent
+                    {
+                        AccountName = GetAccount(accountId).AccountName,
+                        EventType = eventType,
+                        Value = value,
+                        SecondaryAccountName = secondaryAccountName,
+                        TimeStamp = timeStamp,
+                        NewBalance = newBalance,
+                        OldBalance = oldbalance
+                    };
+                    accountEvents.Add(accountEvent);
+                }
+            }
+        }
+        return accountEvents;
+    }
+
     public static List<string> GetPayees(Account account)
     {
         if (connection.State != System.Data.ConnectionState.Open)
