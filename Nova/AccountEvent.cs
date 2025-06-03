@@ -25,5 +25,5 @@ public class AccountEvent
     public required double NewBalance { get; set; }
     public required double OldBalance { get; set; } = -1;
     public required double NetWorth { get; set; } = -1;
-    public string FormattedNewBalance => NewBalance.ToString("C");
+    public string FormattedNewBalance => this.NewBalance.ToString("C");
 }

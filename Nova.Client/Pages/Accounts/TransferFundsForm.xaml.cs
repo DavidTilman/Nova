@@ -24,8 +24,8 @@ namespace Nova.Client.Pages;
 /// </summary>
 public sealed partial class TransferFundsForm : Page
 {
-    public double TransferAmount =>
-        double.TryParse(TransferNumberBox.Text, out double value) ? value : 0.0;
+    public double TransferAmount 
+        => double.TryParse(TransferNumberBox.Text, out double value) ? value : 0.0;
 
     public int ToAccountID
     {
@@ -39,6 +39,7 @@ public sealed partial class TransferFundsForm : Page
                     return id;
                 }
             }
+
             return -1;
         }
     }
@@ -46,7 +47,7 @@ public sealed partial class TransferFundsForm : Page
     public TransferFundsForm(Account account)
     {
         this.InitializeComponent();
-        List<Account> accounts = new List<Account>();
+        List<Account> accounts = [];
         ToAccountComboBox.ItemsSource = from acc in Nova.Database.AccountManager.GetAccounts()
                                         where acc.ID != account.ID
                                         select $"{acc.ID} - {acc.AccountName} - {acc.AccountProvider}";

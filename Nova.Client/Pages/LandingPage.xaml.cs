@@ -30,10 +30,7 @@ namespace Nova.Client.Pages;
 /// </summary>
 public sealed partial class LandingPage : Page
 {
-    public LandingPage()
-    {
-        this.InitializeComponent();   
-    }
+    public LandingPage() => this.InitializeComponent();   
 
     public event EventHandler? LoadingComplete;
 

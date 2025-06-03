@@ -24,10 +24,8 @@ namespace Nova.Client.Pages;
 /// </summary>
 public sealed partial class AddIncomeForm : Page
 {
-    public double IncomeValue =>
-        double.TryParse(IncomeNumberBox.Text, out double value) ? value : 0.0;
-
-
+    public double IncomeValue
+        => double.TryParse(IncomeNumberBox.Text, out double value) ? value : 0.0;
 
     public string IncomeSource => SourceTextBox.Text;
     public AddIncomeForm()

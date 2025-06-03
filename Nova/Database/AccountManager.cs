@@ -9,7 +9,9 @@ namespace Nova.Database;
 
 public static class AccountManager
 {
-    private static SqlConnection connection = new SqlConnection(Config.ConnectionString);
+    private static readonly SqlConnection connection = new SqlConnection(Config.ConnectionString);
+    public static double NetWorth => GetAccounts().Sum(a => a.Balance);
+    public static string FormattedNetWorth => NetWorth.ToString("C");
 
     public static async Task ConnectAsync()
     {
@@ -80,7 +82,7 @@ public static class AccountManager
                 FROM Accounts;
             """;
 
-        List<Account> accounts = new List<Account>();
+        List<Account> accounts = [];
         using (SqlCommand command = new SqlCommand(query, connection))
         using (SqlDataReader reader = command.ExecuteReader())
         while (reader.Read())
@@ -105,13 +107,10 @@ public static class AccountManager
             };
             accounts.Add(acc);
         }
+
         Cache.Accounts = accounts;
         return accounts;
     }
-
-    public static double NetWorth => GetAccounts().Sum(a => a.Balance);
-    public static string FormattedNetWorth => NetWorth.ToString("C");
-
 
     private static async void AddEventAsync(Account account, AccountEvent accountEvent)
     {
@@ -126,18 +125,16 @@ public static class AccountManager
                 VALUES (@PrimaryAccountId, @Type, @Value, @SecondaryText, @TimeStamp, @NewBalance, @OldBalance, @NetWorth);
             """;
 
-        using (SqlCommand command = new SqlCommand(query, connection))
-        {
-            command.Parameters.AddWithValue("@PrimaryAccountId", account.ID);
-            command.Parameters.AddWithValue("@Type", accountEvent.EventType);
-            command.Parameters.AddWithValue("@Value", (object?)accountEvent.Value ?? DBNull.Value);
-            command.Parameters.AddWithValue("@SecondaryText", (object?)accountEvent.SecondaryAccountName ?? DBNull.Value);
-            command.Parameters.AddWithValue("@TimeStamp", accountEvent.TimeStamp);
-            command.Parameters.AddWithValue("@NewBalance", accountEvent.NewBalance);
-            command.Parameters.AddWithValue("@OldBalance", accountEvent.OldBalance);
-            command.Parameters.AddWithValue("@NetWorth", accountEvent.NetWorth);
-            await command.ExecuteNonQueryAsync();
-        }
+        using SqlCommand command = new SqlCommand(query, connection);
+        command.Parameters.AddWithValue("@PrimaryAccountId", account.ID);
+        command.Parameters.AddWithValue("@Type", accountEvent.EventType);
+        command.Parameters.AddWithValue("@Value", (object?) accountEvent.Value ?? DBNull.Value);
+        command.Parameters.AddWithValue("@SecondaryText", (object?) accountEvent.SecondaryAccountName ?? DBNull.Value);
+        command.Parameters.AddWithValue("@TimeStamp", accountEvent.TimeStamp);
+        command.Parameters.AddWithValue("@NewBalance", accountEvent.NewBalance);
+        command.Parameters.AddWithValue("@OldBalance", accountEvent.OldBalance);
+        command.Parameters.AddWithValue("@NetWorth", accountEvent.NetWorth);
+        await command.ExecuteNonQueryAsync();
     }
 
     public static async Task<List<AccountEvent>> GetAccountEventsAsync(Account account)
@@ -147,6 +144,7 @@ public static class AccountManager
             Debug.WriteLine("Returning cached account events.");
             return events;
         }
+
         string query =
             """
                 SELECT * 
@@ -156,35 +154,34 @@ public static class AccountManager
                 ORDER BY 
                     TimeStamp DESC;
             """;
-        List<AccountEvent> accountEvents = new List<AccountEvent>();
+        List<AccountEvent> accountEvents = [];
         using (SqlCommand command = new SqlCommand(query, connection))
         {
             command.Parameters.AddWithValue("@PrimaryAccountId", account.ID);
-            using (SqlDataReader reader = await command.ExecuteReaderAsync())
+            using SqlDataReader reader = await command.ExecuteReaderAsync();
+            while (reader.Read())
             {
-                while (reader.Read())
+                AccountEventType eventType = (AccountEventType) reader.GetInt32(2);
+                double? value = reader.IsDBNull(3) ? null : reader.GetDouble(3);
+                string? secondaryAccountName = reader.IsDBNull(4) ? null : reader.GetString(4);
+                DateTime timeStamp = reader.GetDateTime(5);
+                double newBalance = reader.GetDouble(6);
+                double oldBalance = reader.GetDouble(7);
+                double netWorth = reader.GetDouble(8);
+                AccountEvent accountEvent = new AccountEvent
                 {
-                    AccountEventType eventType = (AccountEventType) reader.GetInt32(2);
-                    double? value = reader.IsDBNull(3) ? null : reader.GetDouble(3);
-                    string? secondaryAccountName = reader.IsDBNull(4) ? null : reader.GetString(4);
-                    DateTime timeStamp = reader.GetDateTime(5);
-                    double newBalance = reader.GetDouble(6);
-                    double oldBalance = reader.GetDouble(7);
-                    double netWorth = reader.GetDouble(8);
-                    AccountEvent accountEvent = new AccountEvent
-                    {
-                        EventType = eventType,
-                        Value = value,
-                        SecondaryAccountName = secondaryAccountName,
-                        TimeStamp = timeStamp,
-                        NewBalance = newBalance,
-                        OldBalance = oldBalance,
-                        NetWorth = netWorth,
-                    };
-                    accountEvents.Add(accountEvent);
-                }
+                    EventType = eventType,
+                    Value = value,
+                    SecondaryAccountName = secondaryAccountName,
+                    TimeStamp = timeStamp,
+                    NewBalance = newBalance,
+                    OldBalance = oldBalance,
+                    NetWorth = netWorth,
+                };
+                accountEvents.Add(accountEvent);
             }
         }
+
         Cache.AccountEvent.Add(account.ID, accountEvents);
         return accountEvents;
     }
@@ -232,9 +229,7 @@ public static class AccountManager
     {
         if (Cache.Accounts == null)
             GetAccounts();
-        Account? account = Cache.Accounts?.FirstOrDefault(a => a.ID == id);
-        if (account == null)
-            throw new KeyNotFoundException($"Account with ID {id} not found.");
+        Account? account = (Cache.Accounts?.FirstOrDefault(a => a.ID == id)) ?? throw new KeyNotFoundException($"Account with ID {id} not found.");
         return account;
     }
 
@@ -269,6 +264,7 @@ public static class AccountManager
             command.Parameters.AddWithValue("@FromId", accountFrom.ID);
             await command.ExecuteNonQueryAsync();
         }
+
         AccountEvent transferEventFrom = new AccountEvent
         {
             EventType = AccountEventType.Transfer,
@@ -301,6 +297,7 @@ public static class AccountManager
             Debug.WriteLine("Returning cached account events.");
             return Cache.AccountEvents.Take(n).ToList();
         }
+
         if (connection.State != System.Data.ConnectionState.Open)
             throw new InvalidOperationException("Database connection is not open.");
         string query = 
@@ -309,37 +306,36 @@ public static class AccountManager
                 FROM AccountEvents 
                 ORDER BY TimeStamp DESC;
             """;
-        List<AccountEvent> accountEvents = new List<AccountEvent>();
+        List<AccountEvent> accountEvents = [];
         using (SqlCommand command = new SqlCommand(query, connection))
         {
             command.Parameters.AddWithValue("@N", n);
-            using (SqlDataReader reader = await command.ExecuteReaderAsync())
+            using SqlDataReader reader = await command.ExecuteReaderAsync();
+            while (reader.Read())
             {
-                while (reader.Read())
+                int accountId = reader.GetInt32(1);
+                AccountEventType eventType = (AccountEventType) reader.GetInt32(2);
+                double? value = reader.IsDBNull(3) ? null : reader.GetDouble(3);
+                string? secondaryAccountName = reader.IsDBNull(4) ? null : reader.GetString(4);
+                DateTime timeStamp = reader.GetDateTime(5);
+                double newBalance = reader.GetDouble(6);
+                double oldbalance = reader.GetDouble(7);
+                double netWorth = reader.GetDouble(8);
+                AccountEvent accountEvent = new AccountEvent
                 {
-                    int accountId = reader.GetInt32(1);
-                    AccountEventType eventType = (AccountEventType) reader.GetInt32(2);
-                    double? value = reader.IsDBNull(3) ? null : reader.GetDouble(3);
-                    string? secondaryAccountName = reader.IsDBNull(4) ? null : reader.GetString(4);
-                    DateTime timeStamp = reader.GetDateTime(5);
-                    double newBalance = reader.GetDouble(6);
-                    double oldbalance = reader.GetDouble(7);
-                    double netWorth = reader.GetDouble(8);
-                    AccountEvent accountEvent = new AccountEvent
-                    {
-                        AccountName = GetAccount(accountId).AccountName,
-                        EventType = eventType,
-                        Value = value,
-                        SecondaryAccountName = secondaryAccountName,
-                        TimeStamp = timeStamp,
-                        NewBalance = newBalance,
-                        OldBalance = oldbalance,
-                        NetWorth = netWorth
-                    };
-                    accountEvents.Add(accountEvent);
-                }
+                    AccountName = GetAccount(accountId).AccountName,
+                    EventType = eventType,
+                    Value = value,
+                    SecondaryAccountName = secondaryAccountName,
+                    TimeStamp = timeStamp,
+                    NewBalance = newBalance,
+                    OldBalance = oldbalance,
+                    NetWorth = netWorth
+                };
+                accountEvents.Add(accountEvent);
             }
         }
+
         return accountEvents;
     }
 
@@ -348,8 +344,9 @@ public static class AccountManager
         if (Cache.AccountEvents != null)
         {
             Debug.WriteLine("Returning cached account events.");
-            return Cache.AccountEvents.ToList();
+            return [.. Cache.AccountEvents];
         }
+
         if (connection.State != System.Data.ConnectionState.Open)
             throw new InvalidOperationException("Database connection is not open.");
         string query =
@@ -358,36 +355,35 @@ public static class AccountManager
                 FROM AccountEvents 
                 ORDER BY TimeStamp DESC;
             """;
-        List<AccountEvent> accountEvents = new List<AccountEvent>();
+        List<AccountEvent> accountEvents = [];
         using (SqlCommand command = new SqlCommand(query, connection))
         {
-            using (SqlDataReader reader = await command.ExecuteReaderAsync())
+            using SqlDataReader reader = await command.ExecuteReaderAsync();
+            while (reader.Read())
             {
-                while (reader.Read())
+                int accountId = reader.GetInt32(1);
+                AccountEventType eventType = (AccountEventType) reader.GetInt32(2);
+                double? value = reader.IsDBNull(3) ? null : reader.GetDouble(3);
+                string? secondaryAccountName = reader.IsDBNull(4) ? null : reader.GetString(4);
+                DateTime timeStamp = reader.GetDateTime(5);
+                double newBalance = reader.GetDouble(6);
+                double oldbalance = reader.GetDouble(7);
+                double netWorth = reader.GetDouble(8);
+                AccountEvent accountEvent = new AccountEvent
                 {
-                    int accountId = reader.GetInt32(1);
-                    AccountEventType eventType = (AccountEventType) reader.GetInt32(2);
-                    double? value = reader.IsDBNull(3) ? null : reader.GetDouble(3);
-                    string? secondaryAccountName = reader.IsDBNull(4) ? null : reader.GetString(4);
-                    DateTime timeStamp = reader.GetDateTime(5);
-                    double newBalance = reader.GetDouble(6);
-                    double oldbalance = reader.GetDouble(7);
-                    double netWorth = reader.GetDouble(8);
-                    AccountEvent accountEvent = new AccountEvent
-                    {
-                        AccountName = GetAccount(accountId).AccountName,
-                        EventType = eventType,
-                        Value = value,
-                        SecondaryAccountName = secondaryAccountName,
-                        TimeStamp = timeStamp,
-                        NewBalance = newBalance,
-                        OldBalance = oldbalance,
-                        NetWorth = netWorth
-                    };
-                    accountEvents.Add(accountEvent);
-                }
+                    AccountName = GetAccount(accountId).AccountName,
+                    EventType = eventType,
+                    Value = value,
+                    SecondaryAccountName = secondaryAccountName,
+                    TimeStamp = timeStamp,
+                    NewBalance = newBalance,
+                    OldBalance = oldbalance,
+                    NetWorth = netWorth
+                };
+                accountEvents.Add(accountEvent);
             }
         }
+
         return accountEvents;
     }
 
@@ -404,20 +400,19 @@ public static class AccountManager
                     AND 
                     Type = @Type;
             """;
-        List<string> payees = new List<string>();
+        List<string> payees = [];
         using (SqlCommand command = new SqlCommand(query, connection))
         {
             command.Parameters.AddWithValue("@PrimaryAccountId", account.ID);
             command.Parameters.AddWithValue("@Type", (int) AccountEventType.Payment);
-            using (SqlDataReader reader = await command.ExecuteReaderAsync())
+            using SqlDataReader reader = await command.ExecuteReaderAsync();
+            while (reader.Read())
             {
-                while (reader.Read())
-                {
-                    string payee = reader.GetString(0);
-                    payees.Add(payee);
-                }
+                string payee = reader.GetString(0);
+                payees.Add(payee);
             }
         }
+
         return payees;
     }
 
@@ -481,6 +476,7 @@ public static class AccountManager
             command.Parameters.AddWithValue("@Amount", interestAmount);
             await command.ExecuteNonQueryAsync();
         }
+
         AddEventAsync(account, new AccountEvent
         {
             EventType = AccountEventType.Interest,
@@ -491,6 +487,7 @@ public static class AccountManager
             OldBalance = account.Balance,
             NetWorth = NetWorth
         });
+
         AccountChanged?.Invoke(null, EventArgs.Empty);
     }
 
@@ -545,7 +542,7 @@ public static class AccountManager
                     AND TimeStamp > DATEADD(DAY, -365, GETDATE())
                 ORDER BY TimeStamp DESC;
             """;
-        Dictionary<char, double> timeChanges = new Dictionary<char, double>();
+        Dictionary<char, double> timeChanges = [];
         
         double weeklyStartBalance = -1;
         double monthlyStartBalance = -1;
@@ -560,32 +557,30 @@ public static class AccountManager
         using (SqlCommand command = new SqlCommand(query, connection))
         {
             command.Parameters.AddWithValue("@PrimaryAccountId", account.ID);
-            using (SqlDataReader reader = await command.ExecuteReaderAsync())
+            using SqlDataReader reader = await command.ExecuteReaderAsync();
+            while (reader.Read())
             {
-                while (reader.Read())
+                int daysAgo = reader.GetInt32(0);
+                double oldBalance = reader.GetDouble(1);
+
+                if (daysAgo < 7)
                 {
-                    int daysAgo = reader.GetInt32(0);
-                    double oldBalance = reader.GetDouble(1);
+                    weeklyStartBalance = oldBalance;
+                }
 
-                    if (daysAgo < 7)
-                    {
-                        weeklyStartBalance = oldBalance;
-                    }
+                if (daysAgo < 31)
+                {
+                    monthlyStartBalance = oldBalance;
+                }
 
-                    if (daysAgo < 31)
-                    {
-                        monthlyStartBalance = oldBalance;
-                    }
+                if (daysAgo < 93)
+                {
+                    quarterlyStartBalance = oldBalance;
+                }
 
-                    if (daysAgo < 93)
-                    {
-                        quarterlyStartBalance = oldBalance;
-                    }
-
-                    if (daysAgo < 365)
-                    {
-                        yearlyStartBalance = oldBalance;
-                    }
+                if (daysAgo < 365)
+                {
+                    yearlyStartBalance = oldBalance;
                 }
             }
         }
@@ -611,7 +606,7 @@ public static class AccountManager
                     TimeStamp > DATEADD(DAY, -365, GETDATE())
                 ORDER BY TimeStamp DESC;
             """;
-        Dictionary<char, double> timeChanges = new Dictionary<char, double>();
+        Dictionary<char, double> timeChanges = [];
 
         double weeklyStartBalance = -1;
         double monthlyStartBalance = -1;
@@ -625,32 +620,30 @@ public static class AccountManager
 
         using (SqlCommand command = new SqlCommand(query, connection))
         {
-            using (SqlDataReader reader = await command.ExecuteReaderAsync())
+            using SqlDataReader reader = await command.ExecuteReaderAsync();
+            while (reader.Read())
             {
-                while (reader.Read())
+                int daysAgo = reader.GetInt32(0);
+                double oldBalance = reader.GetDouble(1);
+
+                if (daysAgo < 7)
                 {
-                    int daysAgo = reader.GetInt32(0);
-                    double oldBalance = reader.GetDouble(1);
+                    weeklyStartBalance = oldBalance;
+                }
 
-                    if (daysAgo < 7)
-                    {
-                        weeklyStartBalance = oldBalance;
-                    }
+                if (daysAgo < 31)
+                {
+                    monthlyStartBalance = oldBalance;
+                }
 
-                    if (daysAgo < 31)
-                    {
-                        monthlyStartBalance = oldBalance;
-                    }
+                if (daysAgo < 93)
+                {
+                    quarterlyStartBalance = oldBalance;
+                }
 
-                    if (daysAgo < 93)
-                    {
-                        quarterlyStartBalance = oldBalance;
-                    }
-
-                    if (daysAgo < 365)
-                    {
-                        yearlyStartBalance = oldBalance;
-                    }
+                if (daysAgo < 365)
+                {
+                    yearlyStartBalance = oldBalance;
                 }
             }
         }
@@ -677,18 +670,10 @@ public static class AccountManager
                 WHERE PrimaryAccountId = @PrimaryAccountId
                 ORDER BY TimeStamp DESC;
             """;
-        using (SqlCommand command = new SqlCommand(query, connection))
-        {
-            command.Parameters.AddWithValue("@PrimaryAccountId", account.ID);
-            using (SqlDataReader reader = await command.ExecuteReaderAsync())
-            {
-                if (reader.Read())
-                {
-                    return reader.GetDateTime(0);
-                }
-            }
-        }
-        return null;
+        using SqlCommand command = new SqlCommand(query, connection);
+        command.Parameters.AddWithValue("@PrimaryAccountId", account.ID);
+        using SqlDataReader reader = await command.ExecuteReaderAsync();
+        return reader.Read() ?  reader.GetDateTime(0) :  null;
     }
 
     public static async Task<Tuple<string, double>> GetHighestPayeeAsync(Account account)
@@ -710,15 +695,14 @@ public static class AccountManager
         {
             command.Parameters.AddWithValue("@Type", (int) AccountEventType.Payment);
             command.Parameters.AddWithValue("@PrimaryAccountId", account.ID);
-            using (SqlDataReader reader = await command.ExecuteReaderAsync())
+            using SqlDataReader reader = await command.ExecuteReaderAsync();
+            if (reader.Read())
             {
-                if (reader.Read())
-                {
-                    amount = reader.GetDouble(1);
-                    payee = reader.GetString(0);
-                }
+                amount = reader.GetDouble(1);
+                payee = reader.GetString(0);
             }
         }
+
         return new(payee, amount);
     }
 

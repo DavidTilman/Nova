@@ -30,8 +30,7 @@ public sealed partial class AccountCardUserControl : UserControl
         this.InitializeComponent();
         Account = account;
 
-
-        DispatcherQueue.TryEnqueue(async () =>
+        this.DispatcherQueue.TryEnqueue(async () =>
         {
             DateTime? lastUpdate = await Database.AccountManager.GetLastUpdateAsync(account);
             if (lastUpdate.HasValue)
@@ -40,21 +39,20 @@ public sealed partial class AccountCardUserControl : UserControl
             }
         });
 
-
         if (account.Change < 0)
         {
             ChangeTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorCriticalBrush"];
-            ChangeTextBlock.Text = $"▼ {account.Change.ToString("C")} ({(Math.Round(account.Change / ((account.Balance - account.Change) == 0 ? 1 :(account.Balance - account.Change)), 4).ToString("P"))})";
+            ChangeTextBlock.Text = $"▼ {account.Change:C} ({Math.Round(account.Change / ((account.Balance - account.Change) == 0 ? 1 : (account.Balance - account.Change)), 4):P})";
 
         }
         else if (account.Change > 0)
         {
             ChangeTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorSuccessBrush"];
-            ChangeTextBlock.Text = $"▲ {account.Change.ToString("C")} ({(Math.Round(account.Change / ((account.Balance - account.Change) == 0 ? 1 : (account.Balance - account.Change)), 4).ToString("P"))})";
+            ChangeTextBlock.Text = $"▲ {account.Change:C} ({Math.Round(account.Change / ((account.Balance - account.Change) == 0 ? 1 : (account.Balance - account.Change)), 4):P})";
         }
         else
         {
-            ChangeTextBlock.Text = $"{account.Change.ToString("C")} ({(Math.Round(account.Change / ((account.Balance - account.Change) == 0 ? 1 : (account.Balance - account.Change)), 4).ToString("P"))})";
+            ChangeTextBlock.Text = $"{account.Change:C} ({Math.Round(account.Change / ((account.Balance - account.Change) == 0 ? 1 : (account.Balance - account.Change)), 4):P})";
         }
     }
 }
