@@ -8,7 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d" Margin="16">
 
-    <Border CornerRadius="{ThemeResource OverlayCornerRadius}" Background="{ThemeResource CardBackgroundFillColorSecondary}" Height="200" Width="250">
+    <Border CornerRadius="{ThemeResource OverlayCornerRadius}" Background="{ThemeResource CardBackgroundFillColorSecondary}" Height="250" Width="300">
         <Grid Margin="16">
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto" />
