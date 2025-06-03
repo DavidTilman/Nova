@@ -8,6 +8,8 @@ using Microsoft.UI.Xaml.Navigation;
 
 using Nova.Database;
 
+using Syncfusion.UI.Xaml.Charts;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
@@ -40,5 +42,20 @@ public sealed partial class AccountOverviewPageDefault : Page
         NumberAccountsTextBlock.Text = AccountManager.GetAccounts().Count.ToString();
         AllTimeIncomeTextBlock.Text = ((from AccountEvent e in events where e.EventType == AccountEventType.Income select e.Value).Sum() ?? 0).ToString("C");
         AllTimeSpendingTextBlock.Text = ((from AccountEvent e in events where e.EventType == AccountEventType.Payment select e.Value).Sum() ?? 0).ToString("C");
+
+        DateTimeAxis xAxis = new DateTimeAxis();
+        xAxis.ShowMajorGridLines = false;
+        NetWorthChart.XAxes.Add(xAxis);
+
+        NumericalAxis yAxis = new NumericalAxis();
+        NetWorthChart.YAxes.Add(yAxis);
+
+        LineSeries series = new LineSeries();
+        series.ItemsSource = events;
+        series.XBindingPath = "TimeStamp";
+        series.YBindingPath = "NetWorth";
+        series.Fill = (Application.Current.Resources["AccentTextFillColorTertiaryBrush"] as SolidColorBrush);
+        //Adding Series to the Chart Series Collection
+        NetWorthChart.Series.Add(series);
     }
 }
