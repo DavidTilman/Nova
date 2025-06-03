@@ -165,22 +165,11 @@ public sealed partial class AccountOverviewPage : Page
         NumericalAxis yAxis = new NumericalAxis();
         BalanceChart.YAxes.Add(yAxis);
 
-        AreaSeries series = new AreaSeries();
+        LineSeries series = new LineSeries();
         series.ItemsSource = AccountEvents;
         series.XBindingPath = "TimeStamp";
         series.YBindingPath = "NewBalance";
-        Windows.UI.Color accent = (Application.Current.Resources["AccentTextFillColorTertiaryBrush"] as SolidColorBrush)!.Color;
-        LinearGradientBrush gradientBrush = new LinearGradientBrush()
-        {
-            StartPoint = new Windows.Foundation.Point(0, 0),
-            EndPoint = new Windows.Foundation.Point(0, 1),
-            GradientStops = new GradientStopCollection()
-            {
-                new GradientStop() { Color = accent, Offset = 0.0 },
-                new GradientStop() { Color = Windows.UI.Color.FromArgb(0, accent.R, accent.G, accent.B), Offset = 1}
-            }
-        };
-        series.Fill = gradientBrush;
+        series.Fill = (Application.Current.Resources["AccentTextFillColorTertiaryBrush"] as SolidColorBrush);
         //Adding Series to the Chart Series Collection
         BalanceChart.Series.Add(series);
     }
