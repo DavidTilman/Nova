@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Nova.Client (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "Nova.Client (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
