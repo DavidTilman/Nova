@@ -28,8 +28,8 @@ public sealed partial class MakePaymentForm : Page
 {
     Account Account { get; set; }
 
-    public double PaymentAmount =>
-        double.TryParse(PaymentAmountNumberBox.Text, out double value) ? value : 0.0;
+    public double PaymentAmount 
+        => double.TryParse(PaymentAmountNumberBox.Text, out double value) ? value : 0.0;
 
     public string PaymentPayee => PayeeTextBox.Text;
 
@@ -37,34 +37,31 @@ public sealed partial class MakePaymentForm : Page
     public MakePaymentForm(Account account)
     {
         this.InitializeComponent();
-        Account = account;
-        Task.Run(async () => Payees = await Database.AccountManager.GetPayeesAsync(account));
+        this.Account = account;
+        Task.Run(async () => this.Payees = await Database.AccountManager.GetPayeesAsync(this.Account));
     }
 
     private void PayeeTextBox_TextChanged(object sender, AutoSuggestBoxTextChangedEventArgs e)
     {
-        if(Payees == null)
+        if(this.Payees == null)
         {
             return;
         }
 
         if (e.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
         {
-            var suitableItems = new List<string>();
-            var splitText = (sender as AutoSuggestBox).Text.ToLower().Split(" ");
-            foreach (var payee in Payees)
+            List<string> suitableItems = [];
+            string[] splitText = (sender as AutoSuggestBox)!.Text.ToLower().Split(" ");
+            foreach (string payee in this.Payees)
             {
-                var found = splitText.All((key) =>
-                {
-                    return payee.ToLower().Contains(key);
-                });
+                bool found = splitText.All((key) => payee.Contains(key, StringComparison.CurrentCultureIgnoreCase));
                 if (found)
                 {
                     suitableItems.Add(payee);
                 }
             }
-            (sender as AutoSuggestBox).ItemsSource = suitableItems;
-        }
 
+            (sender as AutoSuggestBox)!.ItemsSource = suitableItems;
+        }
     }
 }

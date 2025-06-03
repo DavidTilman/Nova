@@ -24,9 +24,9 @@ public class Account
     public required DateTime DateCreated { get; set; }
 
     public required double Change { get; set; }
-    public string FormattedBalance => $"{Balance:C}";
-    public string FormattedChange => $"{Change:C}";
-    public double FractionOfNetWorth => Balance / (Database.AccountManager.NetWorth == 0 ? 1 : Database.AccountManager.NetWorth);
+    public string FormattedBalance => $"{this.Balance:C}";
+    public string FormattedChange => $"{this.Change:C}";
+    public double FractionOfNetWorth => this.Balance / (Database.AccountManager.NetWorth == 0 ? 1 : Database.AccountManager.NetWorth);
 
-    public string FormattedPercentageOfNetWorth => $"{FractionOfNetWorth:P2} of your networth";
+    public string FormattedPercentageOfNetWorth => $"{this.FractionOfNetWorth:P2} of your networth";
 }

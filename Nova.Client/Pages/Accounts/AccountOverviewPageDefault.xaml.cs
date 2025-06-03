@@ -29,42 +29,47 @@ namespace Nova.Client.Pages.Accounts;
 /// </summary>
 public sealed partial class AccountOverviewPageDefault : Page
 {
-    public string FormattedNetWorth => AccountManager.FormattedNetWorth;
+    public static string FormattedNetWorth => AccountManager.FormattedNetWorth;
     public AccountOverviewPageDefault()
     {
         this.InitializeComponent();
 
         NumberAccountsTextBlock.Text = AccountManager.GetAccounts().Count.ToString();
         
-        DispatcherQueue.TryEnqueue(async () =>
+        this.DispatcherQueue.TryEnqueue(async () =>
         {
             List<AccountEvent> events = await AccountManager.GetAllAccountEventsAsync();
+
             foreach (AccountEvent accountEvent in events)
             {
                 AccountEventsListView.Items.Add(
                     new Controls.AccountEventCardUserControl(accountEvent, true));
             }
+
             AllTimeIncomeTextBlock.Text = ((from AccountEvent e in events where e.EventType == AccountEventType.Income select e.Value).Sum() ?? 0).ToString("C");
             AllTimeSpendingTextBlock.Text = ((from AccountEvent e in events where e.EventType == AccountEventType.Payment select e.Value).Sum() ?? 0).ToString("C");
 
-            DateTimeAxis xAxis = new DateTimeAxis();
-            xAxis.ShowMajorGridLines = false;
+            DateTimeAxis xAxis = new()
+            {
+                ShowMajorGridLines = false
+            };
             NetWorthChart.XAxes.Add(xAxis);
 
-            NumericalAxis yAxis = new NumericalAxis();
+            NumericalAxis yAxis = new();
             NetWorthChart.YAxes.Add(yAxis);
 
-            LineSeries series = new LineSeries();
-            series.ItemsSource = events;
-            series.XBindingPath = "TimeStamp";
-            series.YBindingPath = "NetWorth";
-            series.Fill = (Application.Current.Resources["AccentTextFillColorTertiaryBrush"] as SolidColorBrush);
+            LineSeries series = new()
+            {
+                ItemsSource = events,
+                XBindingPath = "TimeStamp",
+                YBindingPath = "NetWorth",
+                Fill = Application.Current.Resources["AccentTextFillColorTertiaryBrush"] as SolidColorBrush
+            };
             //Adding Series to the Chart Series Collection
             NetWorthChart.Series.Add(series);
         });
 
-
-        DispatcherQueue.TryEnqueue(async () =>
+        this.DispatcherQueue.TryEnqueue(async () =>
         {
             Dictionary<char, double> timeChangeNetWorth = await Database.AccountManager.GetTimeChangesAsync();
 
@@ -73,38 +78,21 @@ public sealed partial class AccountOverviewPageDefault : Page
             QuarterChangeIndicatorTextBlock.Text = timeChangeNetWorth['q'].ToString("C");
             YearChangeIndicatorTextBlock.Text = timeChangeNetWorth['y'].ToString("C");
 
-            if (timeChangeNetWorth['w'] >= 0)
-            {
-                WeekChangeIndicatorTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorSuccessBrush"];
-            }
-            else
-            {
-                WeekChangeIndicatorTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorCriticalBrush"];
-            }
-            if (timeChangeNetWorth['m'] >= 0)
-            {
-                MonthChangeIndicatorTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorSuccessBrush"];
-            }
-            else
-            {
-                MonthChangeIndicatorTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorCriticalBrush"];
-            }
-            if (timeChangeNetWorth['q'] >= 0)
-            {
-                QuarterChangeIndicatorTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorSuccessBrush"];
-            }
-            else
-            {
-                QuarterChangeIndicatorTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorCriticalBrush"];
-            }
-            if (timeChangeNetWorth['y'] >= 0)
-            {
-                YearChangeIndicatorTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorSuccessBrush"];
-            }
-            else
-            {
-                YearChangeIndicatorTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorCriticalBrush"];
-            }
+            WeekChangeIndicatorTextBlock.Foreground = timeChangeNetWorth['w'] >= 0
+                ?  (SolidColorBrush) Application.Current.Resources["SystemFillColorSuccessBrush"]
+                : (Brush) (SolidColorBrush) Application.Current.Resources["SystemFillColorCriticalBrush"];
+            
+            MonthChangeIndicatorTextBlock.Foreground = timeChangeNetWorth['m'] >= 0
+                ?  (SolidColorBrush) Application.Current.Resources["SystemFillColorSuccessBrush"]
+                : (Brush) (SolidColorBrush) Application.Current.Resources["SystemFillColorCriticalBrush"];
+            
+            QuarterChangeIndicatorTextBlock.Foreground = timeChangeNetWorth['q'] >= 0
+                ?  (SolidColorBrush) Application.Current.Resources["SystemFillColorSuccessBrush"]
+                : (Brush) (SolidColorBrush) Application.Current.Resources["SystemFillColorCriticalBrush"];
+            
+            YearChangeIndicatorTextBlock.Foreground = timeChangeNetWorth['y'] >= 0
+                ?  (SolidColorBrush) Application.Current.Resources["SystemFillColorSuccessBrush"]
+                : (Brush) (SolidColorBrush) Application.Current.Resources["SystemFillColorCriticalBrush"];
         });
     }
 }

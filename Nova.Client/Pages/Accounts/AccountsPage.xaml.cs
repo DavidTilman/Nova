@@ -37,10 +37,12 @@ public sealed partial class AccountsPage : Page
     {
         this.InitializeComponent();
         List<Nova.Account> accounts = AccountManager.GetAccounts();
+
         foreach (Nova.Account account in accounts)
         {
             AccountCardGridView.Items.Add(new Controls.AccountCardUserControl(account));
         }
+
         AccountOverviewFrame.Navigate(typeof(AccountOverviewPageDefault), null, new DrillInNavigationTransitionInfo());
     }
 
@@ -57,6 +59,7 @@ public sealed partial class AccountsPage : Page
             AccountOverviewFrame.Navigate(typeof(AccountOverviewPageDefault), null, new DrillInNavigationTransitionInfo());
             OverviewAccount = null;
         }
+
         AccountCardGridView.Focus(FocusState.Unfocused);
     }
 }

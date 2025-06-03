@@ -62,7 +62,7 @@ public sealed partial class AddAccountPage : Page
                 Content = "Account added successfully.",
                 CloseButtonText = "Ok"
             };
-            ClearForm();
+            this.ClearForm();
             await successDialog.ShowAsync();
         }
         catch (Exception ex)

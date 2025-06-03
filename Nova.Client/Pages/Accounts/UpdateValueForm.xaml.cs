@@ -16,18 +16,14 @@ using Microsoft.UI.Xaml.Navigation;
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
-namespace Nova.Client.Pages.Accounts
+namespace Nova.Client.Pages.Accounts;
+
+/// <summary>
+/// An empty page that can be used on its own or navigated to within a Frame.
+/// </summary>
+public sealed partial class UpdateValueForm : Page
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
-    public sealed partial class UpdateValueForm : Page
-    {
-        public double NewBalance =>
-            double.TryParse(BalanceNumberBox.Text, out double value) ? value : 0.0;
-        public UpdateValueForm()
-        {
-            this.InitializeComponent();
-        }
-    }
+    public double NewBalance 
+        => double.TryParse(BalanceNumberBox.Text, out double value) ? value : 0.0;
+    public UpdateValueForm() => this.InitializeComponent();
 }

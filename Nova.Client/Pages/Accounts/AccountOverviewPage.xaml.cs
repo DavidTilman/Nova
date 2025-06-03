@@ -31,11 +31,7 @@ public sealed partial class AccountOverviewPage : Page
     public Nova.Account? Account = null;
     public List<AccountEvent> AccountEvents= [];
 
-    public AccountOverviewPage()
-    {
-        this.InitializeComponent();
-
-    }
+    public AccountOverviewPage() => this.InitializeComponent();
 
     protected override async void OnNavigatedTo(NavigationEventArgs e)
     {
@@ -47,7 +43,7 @@ public sealed partial class AccountOverviewPage : Page
         Account = account;
         AccountEvents = await Nova.Database.AccountManager.GetAccountEventsAsync(account);
 
-        DispatcherQueue.TryEnqueue(() =>
+        this.DispatcherQueue.TryEnqueue(() =>
         {
             double? allTimeIncome = (from AccountEvent accountEvent in AccountEvents where accountEvent.EventType == AccountEventType.Income select accountEvent.Value.HasValue ? accountEvent.Value : 0).Sum();
             if (allTimeIncome.HasValue)
@@ -87,23 +83,27 @@ public sealed partial class AccountOverviewPage : Page
                     new Controls.AccountEventCardUserControl(accountEvent));
             }
 
-            DateTimeAxis xAxis = new DateTimeAxis();
-            xAxis.ShowMajorGridLines = false;
+            DateTimeAxis xAxis = new()
+            {
+                ShowMajorGridLines = false
+            };
             BalanceChart.XAxes.Add(xAxis);
 
-            NumericalAxis yAxis = new NumericalAxis();
+            NumericalAxis yAxis = new();
             BalanceChart.YAxes.Add(yAxis);
 
-            LineSeries series = new LineSeries();
-            series.ItemsSource = AccountEvents;
-            series.XBindingPath = "TimeStamp";
-            series.YBindingPath = "NewBalance";
-            series.Fill = (Application.Current.Resources["AccentTextFillColorTertiaryBrush"] as SolidColorBrush);
+            LineSeries series = new()
+            {
+                ItemsSource = AccountEvents,
+                XBindingPath = "TimeStamp",
+                YBindingPath = "NewBalance",
+                Fill = Application.Current.Resources["AccentTextFillColorTertiaryBrush"] as SolidColorBrush
+            };
             //Adding Series to the Chart Series Collection
             BalanceChart.Series.Add(series);
         });
 
-        DispatcherQueue.TryEnqueue(async () =>
+        this.DispatcherQueue.TryEnqueue(async () =>
         {
             Dictionary<char, double> timeChanges = await Nova.Database.AccountManager.GetTimeChangesAsync(account);
 
@@ -149,20 +149,20 @@ public sealed partial class AccountOverviewPage : Page
             }
         });
 
-        DispatcherQueue.TryEnqueue(async () =>
+        this.DispatcherQueue.TryEnqueue(async () =>
         {
             Tuple<string, double> highestPayee = await Nova.Database.AccountManager.GetHighestPayeeAsync(account);
-            string payeeText = $"{highestPayee.Item1} ({highestPayee.Item2.ToString("C")})";
+            string payeeText = $"{highestPayee.Item1} ({highestPayee.Item2:C})";
 
             HighestPayeeTextBlock.Text = payeeText;
         });
-
 
         if (account.AccountType != AccountType.Current)
         {
             AddIncomeButton.Visibility = Visibility.Collapsed;
             MakePaymentButton.Visibility = Visibility.Collapsed;
         }
+
         if (account.AccountType != AccountType.Investment)
         {
             UpdateValueButton.Visibility = Visibility.Collapsed;

@@ -29,15 +29,15 @@ namespace Nova.Client;
 /// </summary>
 public sealed partial class MainWindow : Window
 {
-    Storyboard FadeOutStoryboard = new Storyboard();
-    Storyboard FadeInStoryboard = new Storyboard();
+    readonly Storyboard FadeOutStoryboard = new Storyboard();
+    readonly Storyboard FadeInStoryboard = new Storyboard();
 
     public MainWindow()
     {
         this.InitializeComponent();
         LandingPage landingPage = new LandingPage();
         MainWindowFrame.Content = landingPage;
-        landingPage.LoadingComplete += MainWindow_LoadingComplete;
+        landingPage.LoadingComplete += this.MainWindow_LoadingComplete;
 
         FadeOutStoryboard.Children.Add(new DoubleAnimation
         {
@@ -70,15 +70,9 @@ public sealed partial class MainWindow : Window
         };
     }
 
-    private void MainWindow_LoadingComplete(object? sender, EventArgs e)
-    {
-        FadeOutStoryboard.Begin();
-    }
+    private void MainWindow_LoadingComplete(object? sender, EventArgs e) => this.FadeOutStoryboard.Begin();
 
     public Frame GetMainWindowFrame => MainWindowFrame;
 
-    private void Window_Closed(object sender, WindowEventArgs args)
-    {
-        AccountManager.Disconnect();
-    }
+    private void Window_Closed(object sender, WindowEventArgs args) => AccountManager.Disconnect();
 }
