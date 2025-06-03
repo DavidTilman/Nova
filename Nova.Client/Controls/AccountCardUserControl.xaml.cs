@@ -8,9 +8,11 @@ using Microsoft.UI.Xaml.Navigation;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -27,12 +29,17 @@ public sealed partial class AccountCardUserControl : UserControl
     {
         this.InitializeComponent();
         Account = account;
-        DateTime? lastUpdate = Database.AccountManager.GetLastUpdate(account);
 
-        if (lastUpdate.HasValue)
+
+        DispatcherQueue.TryEnqueue(async () =>
         {
-            LastUpdatedTextBlock.Text = $"{(DateTime.UtcNow - lastUpdate.Value).Days}d";
-        }
+            DateTime? lastUpdate = await Database.AccountManager.GetLastUpdateAsync(account);
+            if (lastUpdate.HasValue)
+            {
+                LastUpdatedTextBlock.Text = $"{(DateTime.UtcNow - lastUpdate.Value).Days}d";
+            }
+        });
+
 
         if (account.Change < 0)
         {

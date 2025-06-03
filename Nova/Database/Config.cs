@@ -7,5 +7,5 @@ using System.Threading.Tasks;
 namespace Nova.Database;
 internal class Config
 {
-    public static string ConnectionString = "Server = tcp:buget.database.windows.net,1433;Initial Catalog = buget; Encrypt=True;TrustServerCertificate=False;Connection Timeout = 30; Authentication=\"Active Directory Default\"";
+    public static string ConnectionString = "Server = tcp:buget.database.windows.net,1433;Initial Catalog = buget; Encrypt=True;TrustServerCertificate=False;Connection Timeout = 30; Authentication=\"Active Directory Default\";MultipleActiveResultSets=True";
 }

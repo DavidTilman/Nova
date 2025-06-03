@@ -37,7 +37,7 @@ public sealed partial class AccountOverviewPage : Page
 
     }
 
-    protected override void OnNavigatedTo(NavigationEventArgs e)
+    protected override async void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
 
@@ -45,7 +45,118 @@ public sealed partial class AccountOverviewPage : Page
             return;
 
         Account = account;
-        AccountEvents = Nova.Database.AccountManager.GetAccountEvents(account);
+        AccountEvents = await Nova.Database.AccountManager.GetAccountEventsAsync(account);
+
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            double? allTimeIncome = (from AccountEvent accountEvent in AccountEvents where accountEvent.EventType == AccountEventType.Income select accountEvent.Value.HasValue ? accountEvent.Value : 0).Sum();
+            if (allTimeIncome.HasValue)
+            {
+                AllTimeIncomeTextBlock.Text = allTimeIncome.Value.ToString("C");
+            }
+
+            double? allTimeSpending = (from AccountEvent accountEvent in AccountEvents where accountEvent.EventType == AccountEventType.Payment select accountEvent.Value.HasValue ? accountEvent.Value : 0).Sum();
+            if (allTimeSpending.HasValue)
+            {
+                AllTimeSpendingTextBlock.Text = allTimeSpending.Value.ToString("C");
+            }
+
+            double? allTimeInterest = (from AccountEvent accountEvent in AccountEvents where accountEvent.EventType == AccountEventType.Interest select accountEvent.Value.HasValue ? accountEvent.Value : 0).Sum();
+            if (allTimeInterest.HasValue)
+            {
+                AllTimeInterestTextBlock.Text = allTimeInterest.Value.ToString("C");
+            }
+
+            double? netTransfers = (from AccountEvent accountEvent in AccountEvents where accountEvent.EventType == AccountEventType.Transfer select accountEvent.Value.HasValue ? accountEvent.Value : 0).Sum();
+            if (netTransfers.HasValue)
+            {
+                NetTransfersTextBlock.Text = netTransfers.Value.ToString("C");
+                if (netTransfers.Value < 0)
+                {
+                    NetTransfersTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorCriticalBrush"];
+                }
+                else if (netTransfers.Value > 0)
+                {
+                    NetTransfersTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorSuccessBrush"];
+                }
+            }
+
+            foreach (AccountEvent accountEvent in AccountEvents)
+            {
+                AccountEventsListView.Items.Add(
+                    new Controls.AccountEventCardUserControl(accountEvent));
+            }
+
+            DateTimeAxis xAxis = new DateTimeAxis();
+            xAxis.ShowMajorGridLines = false;
+            BalanceChart.XAxes.Add(xAxis);
+
+            NumericalAxis yAxis = new NumericalAxis();
+            BalanceChart.YAxes.Add(yAxis);
+
+            LineSeries series = new LineSeries();
+            series.ItemsSource = AccountEvents;
+            series.XBindingPath = "TimeStamp";
+            series.YBindingPath = "NewBalance";
+            series.Fill = (Application.Current.Resources["AccentTextFillColorTertiaryBrush"] as SolidColorBrush);
+            //Adding Series to the Chart Series Collection
+            BalanceChart.Series.Add(series);
+        });
+
+        DispatcherQueue.TryEnqueue(async () =>
+        {
+            Dictionary<char, double> timeChanges = await Nova.Database.AccountManager.GetTimeChangesAsync(account);
+
+            WeekChangeIndicatorTextBlock.Text = timeChanges['w'].ToString("C");
+            MonthChangeIndicatorTextBlock.Text = timeChanges['m'].ToString("C");
+            QuarterChangeIndicatorTextBlock.Text = timeChanges['q'].ToString("C");
+            YearChangeIndicatorTextBlock.Text = timeChanges['y'].ToString("C");
+
+            if (timeChanges['w'] < 0)
+            {
+                WeekChangeIndicatorTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorCriticalBrush"];
+            }
+            else if (timeChanges['w'] > 0)
+            {
+                WeekChangeIndicatorTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorSuccessBrush"];
+            }
+
+            if (timeChanges['m'] < 0)
+            {
+                MonthChangeIndicatorTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorCriticalBrush"];
+            }
+            else if (timeChanges['m'] > 0)
+            {
+                MonthChangeIndicatorTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorSuccessBrush"];
+            }
+
+            if (timeChanges['q'] < 0)
+            {
+                QuarterChangeIndicatorTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorCriticalBrush"];
+            }
+            else if (timeChanges['q'] > 0)
+            {
+                QuarterChangeIndicatorTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorSuccessBrush"];
+            }
+
+            if (timeChanges['y'] < 0)
+            {
+                YearChangeIndicatorTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorCriticalBrush"];
+            }
+            else if (timeChanges['y'] > 0)
+            {
+                YearChangeIndicatorTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorSuccessBrush"];
+            }
+        });
+
+        DispatcherQueue.TryEnqueue(async () =>
+        {
+            Tuple<string, double> highestPayee = await Nova.Database.AccountManager.GetHighestPayeeAsync(account);
+            string payeeText = $"{highestPayee.Item1} ({highestPayee.Item2.ToString("C")})";
+
+            HighestPayeeTextBlock.Text = payeeText;
+        });
+
 
         if (account.AccountType != AccountType.Current)
         {
@@ -55,57 +166,6 @@ public sealed partial class AccountOverviewPage : Page
         if (account.AccountType != AccountType.Investment)
         {
             UpdateValueButton.Visibility = Visibility.Collapsed;
-        }
-
-        foreach (AccountEvent accountEvent in AccountEvents)
-        {
-            Debug.WriteLine($"Adding event: {accountEvent.EventType} with value {accountEvent.Value}");
-            AccountEventsListView.Items.Add(
-                new Controls.AccountEventCardUserControl(accountEvent));
-        }
-
-        Dictionary<char, double> timeChanges =
-            Nova.Database.AccountManager.GetTimeChanges(account);
-
-        WeekChangeIndicatorTextBlock.Text = timeChanges['w'].ToString("C");
-        MonthChangeIndicatorTextBlock.Text = timeChanges['m'].ToString("C");
-        QuarterChangeIndicatorTextBlock.Text = timeChanges['q'].ToString("C");
-        YearChangeIndicatorTextBlock.Text = timeChanges['y'].ToString("C");
-
-        if (timeChanges['w'] < 0)
-        {
-            WeekChangeIndicatorTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorCriticalBrush"];
-        }
-        else if (timeChanges['w'] > 0)
-        {
-            WeekChangeIndicatorTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorSuccessBrush"];
-        }
-
-        if (timeChanges['m'] < 0)
-        {
-            MonthChangeIndicatorTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorCriticalBrush"];
-        }
-        else if (timeChanges['m'] > 0)
-        {
-            MonthChangeIndicatorTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorSuccessBrush"];
-        }
-
-        if (timeChanges['q'] < 0)
-        {
-            QuarterChangeIndicatorTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorCriticalBrush"];
-        }
-        else if (timeChanges['q'] > 0)
-        {
-            QuarterChangeIndicatorTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorSuccessBrush"];
-        }
-
-        if (timeChanges['y'] < 0)
-        {
-            YearChangeIndicatorTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorCriticalBrush"];
-        }
-        else if (timeChanges['y'] > 0)
-        {
-            YearChangeIndicatorTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorSuccessBrush"];
         }
 
         if (Account.AccountType != AccountType.Current)
@@ -119,59 +179,6 @@ public sealed partial class AccountOverviewPage : Page
             HighestPayeeLabelTextBlock.Visibility = Visibility.Collapsed;
             HighestPayeeTextBlock.Visibility = Visibility.Collapsed;
         }
-
-
-        double? allTimeIncome = (from AccountEvent accountEvent in AccountEvents where accountEvent.EventType == AccountEventType.Income select accountEvent.Value.HasValue ? accountEvent.Value : 0).Sum();
-        if (allTimeIncome.HasValue)
-        {
-            AllTimeIncomeTextBlock.Text = allTimeIncome.Value.ToString("C");
-        }
-
-        double? allTimeSpending = (from AccountEvent accountEvent in AccountEvents where accountEvent.EventType == AccountEventType.Payment select accountEvent.Value.HasValue? accountEvent.Value : 0).Sum();
-        if (allTimeSpending.HasValue) 
-        {
-            AllTimeSpendingTextBlock.Text = allTimeSpending.Value.ToString("C");
-        }
-
-        double? allTimeInterest= (from AccountEvent accountEvent in AccountEvents where accountEvent.EventType == AccountEventType.Interest select accountEvent.Value.HasValue ? accountEvent.Value : 0).Sum();
-        if (allTimeInterest.HasValue)
-        {
-            AllTimeInterestTextBlock.Text = allTimeInterest.Value.ToString("C");
-        }
-
-        double? netTransfers = (from AccountEvent accountEvent in AccountEvents where accountEvent.EventType == AccountEventType.Transfer select accountEvent.Value.HasValue ? accountEvent.Value : 0).Sum();
-        if (netTransfers.HasValue)
-        {
-            NetTransfersTextBlock.Text = netTransfers.Value.ToString("C");
-            if (netTransfers.Value < 0)
-            {
-                NetTransfersTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorCriticalBrush"];
-            }
-            else if (netTransfers.Value > 0)
-            {
-                NetTransfersTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorSuccessBrush"];
-            }
-        }
-
-        string highestpayee = Nova.Database.AccountManager.GetHighestPayee(account, out double amount);
-        string payeeText = $"{highestpayee} ({amount.ToString("C")})";
-
-        HighestPayeeTextBlock.Text = payeeText;
-
-        DateTimeAxis xAxis = new DateTimeAxis();
-        xAxis.ShowMajorGridLines = false;
-        BalanceChart.XAxes.Add(xAxis);
-
-        NumericalAxis yAxis = new NumericalAxis();
-        BalanceChart.YAxes.Add(yAxis);
-
-        LineSeries series = new LineSeries();
-        series.ItemsSource = AccountEvents;
-        series.XBindingPath = "TimeStamp";
-        series.YBindingPath = "NewBalance";
-        series.Fill = (Application.Current.Resources["AccentTextFillColorTertiaryBrush"] as SolidColorBrush);
-        //Adding Series to the Chart Series Collection
-        BalanceChart.Series.Add(series);
     }
 
     private async void AddIncomeButton_Click(object sender, RoutedEventArgs e)
@@ -194,7 +201,7 @@ public sealed partial class AccountOverviewPage : Page
 
         try
         {
-            Nova.Database.AccountManager.AddIncome(Account, incomeForm.IncomeValue, incomeForm.IncomeSource);
+            Nova.Database.AccountManager.AddIncomeAsync(Account, incomeForm.IncomeValue, incomeForm.IncomeSource);
         }
         catch (Exception ex)
         {
@@ -234,7 +241,7 @@ public sealed partial class AccountOverviewPage : Page
         Account toAccount = Nova.Database.AccountManager.GetAccount(transferForm.ToAccountID);
         try
         {
-            Nova.Database.AccountManager.MakeTransfer(toAccount, Account, transferForm.TransferAmount);
+            Nova.Database.AccountManager.MakeTransferAsync(toAccount, Account, transferForm.TransferAmount);
         }
         catch (Exception ex)
         {
@@ -270,7 +277,7 @@ public sealed partial class AccountOverviewPage : Page
 
         try
         {
-            Nova.Database.AccountManager.MakePayment(Account,
+            Nova.Database.AccountManager.MakePaymentAsync(Account,
                 paymentForm.PaymentAmount, paymentForm.PaymentPayee);
         }
         catch (Exception ex)
@@ -307,7 +314,7 @@ public sealed partial class AccountOverviewPage : Page
 
         try
         {
-            Nova.Database.AccountManager.AddInterest(Account,
+            Nova.Database.AccountManager.AddInterestAsync(Account,
                 interestForm.InterestValue);
         }
         catch (Exception ex)
@@ -344,7 +351,7 @@ public sealed partial class AccountOverviewPage : Page
 
         try
         {
-            Nova.Database.AccountManager.UpdateValue(Account,
+            Nova.Database.AccountManager.UpdateValueAsync(Account,
                 updateForm.NewBalance);
         }
         catch (Exception ex)

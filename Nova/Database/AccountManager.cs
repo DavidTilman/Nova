@@ -26,7 +26,7 @@ public static class AccountManager
         connection.Close();
     }
 
-    public static void AddAccount(Account account)
+    public static async void AddAccount(Account account)
     {
         Cache.Accounts = null; // Clear cache to ensure fresh data is fetched next time
         if (connection.State != System.Data.ConnectionState.Open)
@@ -48,7 +48,7 @@ public static class AccountManager
             command.Parameters.AddWithValue("@Type", (byte) account.AccountType);
             command.Parameters.AddWithValue("@Balance", account.Balance);
             command.Parameters.AddWithValue("@DateCreated", DateTime.UtcNow);
-            object? result = command.ExecuteScalar();
+            object? result = await command.ExecuteScalarAsync();
             newAccountId = Convert.ToInt32(result);
         }
 
@@ -63,7 +63,7 @@ public static class AccountManager
             NetWorth = NetWorth,
         };
 
-        AddEvent(account, creation);
+        AddEventAsync(account, creation);
     }
 
     public static List<Account> GetAccounts()
@@ -113,7 +113,7 @@ public static class AccountManager
     public static string FormattedNetWorth => NetWorth.ToString("C");
 
 
-    private static void AddEvent(Account account, AccountEvent accountEvent)
+    private static async void AddEventAsync(Account account, AccountEvent accountEvent)
     {
         Debug.WriteLine($"{account.ID}");
         Cache.Accounts = null;
@@ -136,11 +136,11 @@ public static class AccountManager
             command.Parameters.AddWithValue("@NewBalance", accountEvent.NewBalance);
             command.Parameters.AddWithValue("@OldBalance", accountEvent.OldBalance);
             command.Parameters.AddWithValue("@NetWorth", accountEvent.NetWorth);
-            command.ExecuteNonQuery();
+            await command.ExecuteNonQueryAsync();
         }
     }
 
-    public static List<AccountEvent> GetAccountEvents(Account account)
+    public static async Task<List<AccountEvent>> GetAccountEventsAsync(Account account)
     {
         if (Cache.AccountEvent.TryGetValue(account.ID, out List<AccountEvent>? events))
         {
@@ -160,7 +160,7 @@ public static class AccountManager
         using (SqlCommand command = new SqlCommand(query, connection))
         {
             command.Parameters.AddWithValue("@PrimaryAccountId", account.ID);
-            using (SqlDataReader reader = command.ExecuteReader())
+            using (SqlDataReader reader = await command.ExecuteReaderAsync())
             {
                 while (reader.Read())
                 {
@@ -191,7 +191,7 @@ public static class AccountManager
 
     public static event EventHandler? AccountChanged;
 
-    public static void AddIncome(Account account, double value, string source)
+    public static async void AddIncomeAsync(Account account, double value, string source)
     {
         string query = 
             """
@@ -211,7 +211,7 @@ public static class AccountManager
         {
             command.Parameters.AddWithValue("@Value", value);
             command.Parameters.AddWithValue("@Id", account.ID);
-            command.ExecuteNonQuery();
+            await command.ExecuteNonQueryAsync();
         }
 
         AccountEvent incomeEvent = new AccountEvent
@@ -224,7 +224,7 @@ public static class AccountManager
             OldBalance = account.Balance,
             NetWorth = NetWorth
         };
-        AddEvent(account, incomeEvent);
+        AddEventAsync(account, incomeEvent);
         AccountChanged?.Invoke(null, EventArgs.Empty);
     }
 
@@ -238,7 +238,7 @@ public static class AccountManager
         return account;
     }
 
-    public static void MakeTransfer(Account accountTo, Account accountFrom, double value)
+    public static async void MakeTransferAsync(Account accountTo, Account accountFrom, double value)
     {
         string query = 
             """
@@ -267,7 +267,7 @@ public static class AccountManager
             command.Parameters.AddWithValue("@Value", value);
             command.Parameters.AddWithValue("@ToId", accountTo.ID);
             command.Parameters.AddWithValue("@FromId", accountFrom.ID);
-            command.ExecuteNonQuery();
+            await command.ExecuteNonQueryAsync();
         }
         AccountEvent transferEventFrom = new AccountEvent
         {
@@ -279,7 +279,7 @@ public static class AccountManager
             OldBalance = accountTo.Balance,
             NetWorth = NetWorth
         };
-        AddEvent(accountTo, transferEventFrom);
+        AddEventAsync(accountTo, transferEventFrom);
         AccountEvent transferEventTo = new AccountEvent
         {
             EventType = AccountEventType.Transfer,
@@ -290,11 +290,11 @@ public static class AccountManager
             OldBalance = accountFrom.Balance,
             NetWorth = NetWorth
         };
-        AddEvent(accountFrom, transferEventTo);
+        AddEventAsync(accountFrom, transferEventTo);
         AccountChanged?.Invoke(null, EventArgs.Empty);
     }
 
-    public static List<AccountEvent> GetAccountEvents(int n)
+    public static async Task<List<AccountEvent>> GetAccountEvents(int n)
     {
         if (Cache.AccountEvents != null && Cache.AccountEvents.Count >= n)
         {
@@ -313,7 +313,7 @@ public static class AccountManager
         using (SqlCommand command = new SqlCommand(query, connection))
         {
             command.Parameters.AddWithValue("@N", n);
-            using (SqlDataReader reader = command.ExecuteReader())
+            using (SqlDataReader reader = await command.ExecuteReaderAsync())
             {
                 while (reader.Read())
                 {
@@ -343,7 +343,7 @@ public static class AccountManager
         return accountEvents;
     }
 
-    public static List<AccountEvent> GetAllAccountEvents()
+    public static async Task<List<AccountEvent>> GetAllAccountEventsAsync()
     {
         if (Cache.AccountEvents != null)
         {
@@ -361,7 +361,7 @@ public static class AccountManager
         List<AccountEvent> accountEvents = new List<AccountEvent>();
         using (SqlCommand command = new SqlCommand(query, connection))
         {
-            using (SqlDataReader reader = command.ExecuteReader())
+            using (SqlDataReader reader = await command.ExecuteReaderAsync())
             {
                 while (reader.Read())
                 {
@@ -391,7 +391,7 @@ public static class AccountManager
         return accountEvents;
     }
 
-    public static List<string> GetPayees(Account account)
+    public static async Task<List<string>> GetPayeesAsync(Account account)
     {
         if (connection.State != System.Data.ConnectionState.Open)
             throw new InvalidOperationException("Database connection is not open.");
@@ -409,7 +409,7 @@ public static class AccountManager
         {
             command.Parameters.AddWithValue("@PrimaryAccountId", account.ID);
             command.Parameters.AddWithValue("@Type", (int) AccountEventType.Payment);
-            using (SqlDataReader reader = command.ExecuteReader())
+            using (SqlDataReader reader = await command.ExecuteReaderAsync())
             {
                 while (reader.Read())
                 {
@@ -421,7 +421,7 @@ public static class AccountManager
         return payees;
     }
 
-    public static void MakePayment(Account account, double amount, string payee)
+    public static async void MakePaymentAsync(Account account, double amount, string payee)
     {
         string query = 
             """
@@ -441,10 +441,10 @@ public static class AccountManager
         {
             command.Parameters.AddWithValue("@Id", account.ID);
             command.Parameters.AddWithValue("@Value", amount);
-            command.ExecuteNonQuery();
+            await command.ExecuteNonQueryAsync();
         }
 
-        AddEvent(account, new AccountEvent
+        AddEventAsync(account, new AccountEvent
         {
             EventType = AccountEventType.Payment,
             Value = amount,
@@ -458,7 +458,7 @@ public static class AccountManager
         AccountChanged?.Invoke(null, EventArgs.Empty);
     }
 
-    public static void AddInterest(Account account, double interestAmount)
+    public static async void AddInterestAsync(Account account, double interestAmount)
     {
         if (connection.State != System.Data.ConnectionState.Open)
             throw new InvalidOperationException("Database connection is not open.");
@@ -479,9 +479,9 @@ public static class AccountManager
         {
             command.Parameters.AddWithValue("@Id", account.ID);
             command.Parameters.AddWithValue("@Amount", interestAmount);
-            command.ExecuteNonQuery();
+            await command.ExecuteNonQueryAsync();
         }
-        AddEvent(account, new AccountEvent
+        AddEventAsync(account, new AccountEvent
         {
             EventType = AccountEventType.Interest,
             Value = interestAmount,
@@ -494,7 +494,7 @@ public static class AccountManager
         AccountChanged?.Invoke(null, EventArgs.Empty);
     }
 
-    public static void UpdateValue(Account account, double value)
+    public static async void UpdateValueAsync(Account account, double value)
     {
         string query = 
             """ 
@@ -514,7 +514,7 @@ public static class AccountManager
             command.Parameters.AddWithValue("@Value", value);
             command.Parameters.AddWithValue("@Id", account.ID);
             command.Parameters.AddWithValue("@Change", value - account.Balance);
-            command.ExecuteNonQuery();
+            await command.ExecuteNonQueryAsync();
         }
 
         AccountEvent updateEvent = new AccountEvent
@@ -527,11 +527,11 @@ public static class AccountManager
             OldBalance = account.Balance,
             NetWorth = NetWorth
         };
-        AddEvent(account, updateEvent);
+        AddEventAsync(account, updateEvent);
         AccountChanged?.Invoke(null, EventArgs.Empty);
     }
 
-    public static Dictionary<char, double> GetTimeChanges(Account account)
+    public static async Task<Dictionary<char, double>> GetTimeChangesAsync(Account account)
     {
         if (connection.State != System.Data.ConnectionState.Open)
             throw new InvalidOperationException("Database connection is not open.");
@@ -560,7 +560,7 @@ public static class AccountManager
         using (SqlCommand command = new SqlCommand(query, connection))
         {
             command.Parameters.AddWithValue("@PrimaryAccountId", account.ID);
-            using (SqlDataReader reader = command.ExecuteReader())
+            using (SqlDataReader reader = await command.ExecuteReaderAsync())
             {
                 while (reader.Read())
                 {
@@ -598,7 +598,7 @@ public static class AccountManager
         return timeChanges;
     }
 
-    public static Dictionary<char, double> GetTimeChanges()
+    public static async Task<Dictionary<char, double>> GetTimeChangesAsync()
     {
         if (connection.State != System.Data.ConnectionState.Open)
             throw new InvalidOperationException("Database connection is not open.");
@@ -625,7 +625,7 @@ public static class AccountManager
 
         using (SqlCommand command = new SqlCommand(query, connection))
         {
-            using (SqlDataReader reader = command.ExecuteReader())
+            using (SqlDataReader reader = await command.ExecuteReaderAsync())
             {
                 while (reader.Read())
                 {
@@ -665,7 +665,7 @@ public static class AccountManager
         return timeChanges;
     }
 
-    public static DateTime? GetLastUpdate(Account account)
+    public static async Task<DateTime?> GetLastUpdateAsync(Account account)
     {
         if (connection.State != System.Data.ConnectionState.Open)
             throw new InvalidOperationException("Database connection is not open.");
@@ -680,7 +680,7 @@ public static class AccountManager
         using (SqlCommand command = new SqlCommand(query, connection))
         {
             command.Parameters.AddWithValue("@PrimaryAccountId", account.ID);
-            using (SqlDataReader reader = command.ExecuteReader())
+            using (SqlDataReader reader = await command.ExecuteReaderAsync())
             {
                 if (reader.Read())
                 {
@@ -691,7 +691,7 @@ public static class AccountManager
         return null;
     }
 
-    public static string GetHighestPayee(Account account, out double amount)
+    public static async Task<Tuple<string, double>> GetHighestPayeeAsync(Account account)
     {
         string query =
             """
@@ -704,21 +704,22 @@ public static class AccountManager
             """;
         if (connection.State != System.Data.ConnectionState.Open)
             throw new InvalidOperationException("Database connection is not open.");
-        amount = 0;
+        string payee = "None";
+        double amount = 0;
         using (SqlCommand command = new SqlCommand(query, connection))
         {
             command.Parameters.AddWithValue("@Type", (int) AccountEventType.Payment);
             command.Parameters.AddWithValue("@PrimaryAccountId", account.ID);
-            using (SqlDataReader reader = command.ExecuteReader())
+            using (SqlDataReader reader = await command.ExecuteReaderAsync())
             {
                 if (reader.Read())
                 {
                     amount = reader.GetDouble(1);
-                    return reader.GetString(0);
+                    payee = reader.GetString(0);
                 }
             }
         }
-        return "None";
+        return new(payee, amount);
     }
 
     public static class Cache

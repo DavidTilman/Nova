@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -32,25 +33,26 @@ public sealed partial class MakePaymentForm : Page
 
     public string PaymentPayee => PayeeTextBox.Text;
 
+    List<string>? Payees { get; set; } = null;
     public MakePaymentForm(Account account)
     {
         this.InitializeComponent();
         Account = account;
-        List<string > payees = new List<string>();
-        foreach (var payee in Nova.Database.AccountManager.GetPayees(account))
-        {
-            Debug.WriteLine($"Payee: {payee}"); 
-        }
+        Task.Run(async () => Payees = await Database.AccountManager.GetPayeesAsync(account));
     }
 
-    private async void PayeeTextBox_TextChanged(object sender, AutoSuggestBoxTextChangedEventArgs e)
+    private void PayeeTextBox_TextChanged(object sender, AutoSuggestBoxTextChangedEventArgs e)
     {
+        if(Payees == null)
+        {
+            return;
+        }
+
         if (e.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
         {
-            List<string> payees = Database.AccountManager.GetPayees(Account);
             var suitableItems = new List<string>();
             var splitText = (sender as AutoSuggestBox).Text.ToLower().Split(" ");
-            foreach (var payee in payees)
+            foreach (var payee in Payees)
             {
                 var found = splitText.All((key) =>
                 {
