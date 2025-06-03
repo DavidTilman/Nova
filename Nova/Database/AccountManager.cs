@@ -598,6 +598,73 @@ public static class AccountManager
         return timeChanges;
     }
 
+    public static Dictionary<char, double> GetTimeChanges()
+    {
+        if (connection.State != System.Data.ConnectionState.Open)
+            throw new InvalidOperationException("Database connection is not open.");
+
+        string query =
+            """
+                SELECT DATEDIFF(DAY, TimeStamp, GETDATE()) as DaysOld, NewBalance
+                FROM AccountEvents
+                WHERE 
+                    TimeStamp > DATEADD(DAY, -365, GETDATE())
+                ORDER BY TimeStamp DESC;
+            """;
+        Dictionary<char, double> timeChanges = new Dictionary<char, double>();
+
+        double weeklyStartBalance = -1;
+        double monthlyStartBalance = -1;
+        double quarterlyStartBalance = -1;
+        double yearlyStartBalance = -1;
+
+        DateTime weekCutoff = DateTime.UtcNow.AddDays(-7);
+        DateTime monthCutoff = DateTime.UtcNow.AddMonths(-31);
+        DateTime quarterCutoff = DateTime.UtcNow.AddMonths(-3);
+        DateTime yearCutoff = DateTime.UtcNow.AddYears(-1);
+
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            using (SqlDataReader reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    int daysAgo = reader.GetInt32(0);
+                    double oldBalance = reader.GetDouble(1);
+
+                    if (daysAgo < 7)
+                    {
+                        weeklyStartBalance = oldBalance;
+                    }
+
+                    if (daysAgo < 31)
+                    {
+                        monthlyStartBalance = oldBalance;
+                    }
+
+                    if (daysAgo < 93)
+                    {
+                        quarterlyStartBalance = oldBalance;
+                    }
+
+                    if (daysAgo < 365)
+                    {
+                        yearlyStartBalance = oldBalance;
+                    }
+                }
+            }
+        }
+
+        double netWorth = NetWorth;
+
+        timeChanges['w'] = weeklyStartBalance == -1 ? 0 : netWorth - weeklyStartBalance;
+        timeChanges['m'] = monthlyStartBalance == -1 ? 0 : netWorth - monthlyStartBalance;
+        timeChanges['q'] = quarterlyStartBalance == -1 ? 0 : netWorth - quarterlyStartBalance;
+        timeChanges['y'] = yearlyStartBalance == -1 ? 0 : netWorth - yearlyStartBalance;
+
+        return timeChanges;
+    }
+
     public static DateTime? GetLastUpdate(Account account)
     {
         if (connection.State != System.Data.ConnectionState.Open)

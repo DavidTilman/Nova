@@ -165,7 +165,7 @@ public sealed partial class AccountOverviewPage : Page
         NumericalAxis yAxis = new NumericalAxis();
         BalanceChart.YAxes.Add(yAxis);
 
-        AreaSeries series = new AreaSeries();
+        LineSeries series = new LineSeries();
         series.ItemsSource = AccountEvents;
         series.XBindingPath = "TimeStamp";
         series.YBindingPath = "NewBalance";

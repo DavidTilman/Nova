@@ -43,6 +43,47 @@ public sealed partial class AccountOverviewPageDefault : Page
         AllTimeIncomeTextBlock.Text = ((from AccountEvent e in events where e.EventType == AccountEventType.Income select e.Value).Sum() ?? 0).ToString("C");
         AllTimeSpendingTextBlock.Text = ((from AccountEvent e in events where e.EventType == AccountEventType.Payment select e.Value).Sum() ?? 0).ToString("C");
 
+        Dictionary<char, double> timeChangeNetWorth = Database.AccountManager.GetTimeChanges();
+
+        WeekChangeIndicatorTextBlock.Text = timeChangeNetWorth['w'].ToString("C");
+        MonthChangeIndicatorTextBlock.Text = timeChangeNetWorth['m'].ToString("C");
+        QuarterChangeIndicatorTextBlock.Text = timeChangeNetWorth['q'].ToString("C");
+        YearChangeIndicatorTextBlock.Text = timeChangeNetWorth['y'].ToString("C");
+
+        if (timeChangeNetWorth['w'] >= 0)
+        {
+            WeekChangeIndicatorTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorSuccessBrush"];
+        }
+        else
+        {
+            WeekChangeIndicatorTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorCriticalBrush"];
+        }
+        if (timeChangeNetWorth['m'] >= 0)
+        {
+            MonthChangeIndicatorTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorSuccessBrush"];
+        }
+        else
+        {
+            MonthChangeIndicatorTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorCriticalBrush"];
+        }
+        if (timeChangeNetWorth['q'] >= 0)
+        {
+            QuarterChangeIndicatorTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorSuccessBrush"];
+        }
+        else
+        {
+            QuarterChangeIndicatorTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorCriticalBrush"];
+        }
+        if (timeChangeNetWorth['y'] >= 0)
+        {
+            YearChangeIndicatorTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorSuccessBrush"];
+        }
+        else
+        {
+            YearChangeIndicatorTextBlock.Foreground = (SolidColorBrush) Application.Current.Resources["SystemFillColorCriticalBrush"];
+        }
+
+
         DateTimeAxis xAxis = new DateTimeAxis();
         xAxis.ShowMajorGridLines = false;
         NetWorthChart.XAxes.Add(xAxis);

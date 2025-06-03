@@ -40,6 +40,33 @@
 
                 <Border  Margin="0,16"  BorderBrush="{ThemeResource AccentAAFillColorDefaultBrush}" Height="1" BorderThickness="1"/>
 
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto" />
+                        <RowDefinition Height="auto" />
+                    </Grid.RowDefinitions>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*" />
+                        <ColumnDefinition Width="1*" />
+                        <ColumnDefinition Width="1*" />
+                        <ColumnDefinition Width="1*" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="W" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="M" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Row="0" Grid.Column="2" Text="Q" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Row="0" Grid.Column="3" Text="Y" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                    <TextBlock Grid.Row="1" Grid.Column="0" x:Name="WeekChangeIndicatorTextBlock" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" x:Name="MonthChangeIndicatorTextBlock" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Row="1" Grid.Column="2" x:Name="QuarterChangeIndicatorTextBlock" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Row="1" Grid.Column="3" x:Name="YearChangeIndicatorTextBlock" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Grid>
+
+                <Border  Margin="0,16"  BorderBrush="{ThemeResource AccentAAFillColorDefaultBrush}" Height="1" BorderThickness="1"/>
+
+
                 <Grid ColumnSpacing="16">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="1*" />
