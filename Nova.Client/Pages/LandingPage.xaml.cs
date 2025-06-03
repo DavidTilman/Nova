@@ -39,6 +39,7 @@ public sealed partial class LandingPage : Page
     private async Task AttemptLoadAsync()
     {
         LoadingTipTextBlock.Text = "Connecting to database...";
+
         try
         {
             await AccountManager.ConnectAsync();
