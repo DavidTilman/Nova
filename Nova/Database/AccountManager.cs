@@ -6,31 +6,42 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 
 namespace Nova.Database;
-
 public static class AccountManager
 {
     private static readonly SqlConnection connection = new SqlConnection(Config.ConnectionString);
+    
+    public static event EventHandler? AccountChanged;
     public static double NetWorth => GetAccounts().Sum(a => a.Balance);
     public static string FormattedNetWorth => NetWorth.ToString("C");
 
     public static async Task ConnectAsync()
     {
+        Debug.WriteLine("Attempting to connect to database...");
+
         if (connection.State == System.Data.ConnectionState.Open)
             return;
 
         await connection.OpenAsync();
+
+        Debug.WriteLine("Connected to database successfully.");
     }
 
     public static void Disconnect()
     {
+        Debug.WriteLine("Disconnecting from database...");
+
         if (connection.State == System.Data.ConnectionState.Closed)
             return;
         connection.Close();
+
+        Debug.WriteLine("Disconnected from database.");
     }
 
     public static async void AddAccount(Account account)
     {
-        Cache.Accounts = null; // Clear cache to ensure fresh data is fetched next time
+        Debug.WriteLine($"Adding account: {account.AccountName} ({account.AccountType}) with balance {account.Balance:C}");
+
+        Cache.Accounts = null;
         if (connection.State != System.Data.ConnectionState.Open)
             throw new InvalidOperationException("Database connection is not open.");
         
@@ -54,6 +65,9 @@ public static class AccountManager
             newAccountId = Convert.ToInt32(result);
         }
 
+        Debug.WriteLine($"Updated dbo.Accounts");
+        Debug.WriteLine($"New account ID: {newAccountId}");
+
         account.ID = newAccountId;
         
         AccountEvent creation = new AccountEvent
@@ -70,6 +84,8 @@ public static class AccountManager
 
     public static List<Account> GetAccounts()
     {
+        Debug.WriteLine("Retrieving accounts from database...");
+
         if (Cache.Accounts != null)
         {
             Debug.WriteLine("Returning cached accounts.");
@@ -83,6 +99,7 @@ public static class AccountManager
             """;
 
         List<Account> accounts = [];
+
         using (SqlCommand command = new SqlCommand(query, connection))
         using (SqlDataReader reader = command.ExecuteReader())
         while (reader.Read())
@@ -105,7 +122,10 @@ public static class AccountManager
                 DateCreated = created,
                 Change = change
             };
+
             accounts.Add(acc);
+
+            Debug.WriteLine($"Retrieved account: {acc.AccountName} ({acc.AccountType}) with balance {acc.Balance:C}");
         }
 
         Cache.Accounts = accounts;
@@ -114,11 +134,14 @@ public static class AccountManager
 
     private static async void AddEventAsync(Account account, AccountEvent accountEvent)
     {
-        Debug.WriteLine($"{account.ID}");
+        Debug.WriteLine($"Adding event for account {account.AccountName} ({account.ID}): {accountEvent.EventType} with value {accountEvent.Value:C}");
+
         Cache.Accounts = null;
         Cache.AccountEvent.Remove(account.ID);
+
         if (connection.State != System.Data.ConnectionState.Open)
             throw new InvalidOperationException("Database connection is not open.");
+
         string query = 
             """
                 INSERT INTO AccountEvents (PrimaryAccountId, Type, Value, SecondaryText, TimeStamp, NewBalance, OldBalance, NetWorth) 
@@ -135,15 +158,22 @@ public static class AccountManager
         command.Parameters.AddWithValue("@OldBalance", accountEvent.OldBalance);
         command.Parameters.AddWithValue("@NetWorth", accountEvent.NetWorth);
         await command.ExecuteNonQueryAsync();
+
+        Debug.WriteLine("Event added successfully.");
     }
 
     public static async Task<List<AccountEvent>> GetAccountEventsAsync(Account account)
     {
+        Debug.WriteLine($"Retrieving events for account {account.AccountName} ({account.ID})...");
+
         if (Cache.AccountEvent.TryGetValue(account.ID, out List<AccountEvent>? events))
         {
             Debug.WriteLine("Returning cached account events.");
             return events;
         }
+
+        if (connection.State != System.Data.ConnectionState.Open)
+            throw new InvalidOperationException("Database connection is not open.");
 
         string query =
             """
@@ -154,7 +184,9 @@ public static class AccountManager
                 ORDER BY 
                     TimeStamp DESC;
             """;
+
         List<AccountEvent> accountEvents = [];
+
         using (SqlCommand command = new SqlCommand(query, connection))
         {
             command.Parameters.AddWithValue("@PrimaryAccountId", account.ID);
@@ -179,6 +211,8 @@ public static class AccountManager
                     NetWorth = netWorth,
                 };
                 accountEvents.Add(accountEvent);
+
+                Debug.WriteLine($"Retrieved event: {accountEvent.EventType} with value {accountEvent.Value:C} at {accountEvent.TimeStamp}");
             }
         }
 
@@ -186,10 +220,10 @@ public static class AccountManager
         return accountEvents;
     }
 
-    public static event EventHandler? AccountChanged;
-
     public static async void AddIncomeAsync(Account account, double value, string source)
     {
+        Debug.WriteLine($"Adding income to account {account.AccountName} ({account.ID}): {value:C} from {source}");
+
         string query = 
             """
                 UPDATE Accounts 
@@ -199,16 +233,21 @@ public static class AccountManager
                 WHERE 
                     Id = @Id;
             """;
+
         if (connection.State != System.Data.ConnectionState.Open)
             throw new InvalidOperationException("Database connection is not open.");
+
         Cache.Accounts = null;
         Cache.AccountEvents?.Clear();
         Cache.AccountEvent.Remove(account.ID);
+
         using (SqlCommand command = new SqlCommand(query, connection))
         {
             command.Parameters.AddWithValue("@Value", value);
             command.Parameters.AddWithValue("@Id", account.ID);
             await command.ExecuteNonQueryAsync();
+
+            Debug.WriteLine($"Updated account {account.AccountName} ({account.ID}) with new balance {account.Balance + value:C}."); 
         }
 
         AccountEvent incomeEvent = new AccountEvent
@@ -221,7 +260,9 @@ public static class AccountManager
             OldBalance = account.Balance,
             NetWorth = NetWorth
         };
+
         AddEventAsync(account, incomeEvent);
+        
         AccountChanged?.Invoke(null, EventArgs.Empty);
     }
 
@@ -229,12 +270,16 @@ public static class AccountManager
     {
         if (Cache.Accounts == null)
             GetAccounts();
+     
         Account? account = (Cache.Accounts?.FirstOrDefault(a => a.ID == id)) ?? throw new KeyNotFoundException($"Account with ID {id} not found.");
+        
         return account;
     }
 
     public static async void MakeTransferAsync(Account accountTo, Account accountFrom, double value)
     {
+        Debug.WriteLine($"Transferring {value:C} from {accountFrom.AccountName} ({accountFrom.ID}) to {accountTo.AccountName} ({accountTo.ID})");
+
         string query = 
             """
                 UPDATE Accounts 
@@ -251,18 +296,22 @@ public static class AccountManager
                 WHERE 
                     Id = @FromId;
             """;
+
         if (connection.State != System.Data.ConnectionState.Open)
             throw new InvalidOperationException("Database connection is not open.");
+
         Cache.Accounts = null;
         Cache.AccountEvents?.Clear();
         Cache.AccountEvent.Remove(accountTo.ID);
         Cache.AccountEvent.Remove(accountFrom.ID);
+
         using (SqlCommand command = new SqlCommand(query, connection))
         {
             command.Parameters.AddWithValue("@Value", value);
             command.Parameters.AddWithValue("@ToId", accountTo.ID);
             command.Parameters.AddWithValue("@FromId", accountFrom.ID);
             await command.ExecuteNonQueryAsync();
+            Debug.WriteLine($"Updated accounts: {accountTo.AccountName} new balance {accountTo.Balance + value:C}, {accountFrom.AccountName} new balance {accountFrom.Balance - value:C}");
         }
 
         AccountEvent transferEventFrom = new AccountEvent
@@ -275,7 +324,9 @@ public static class AccountManager
             OldBalance = accountTo.Balance,
             NetWorth = NetWorth
         };
+
         AddEventAsync(accountTo, transferEventFrom);
+
         AccountEvent transferEventTo = new AccountEvent
         {
             EventType = AccountEventType.Transfer,
@@ -286,12 +337,16 @@ public static class AccountManager
             OldBalance = accountFrom.Balance,
             NetWorth = NetWorth
         };
+
         AddEventAsync(accountFrom, transferEventTo);
+
         AccountChanged?.Invoke(null, EventArgs.Empty);
     }
 
     public static async Task<List<AccountEvent>> GetAccountEvents(int n)
     {
+        Debug.WriteLine($"Retrieving the last {n} account events...");
+
         if (Cache.AccountEvents != null && Cache.AccountEvents.Count >= n)
         {
             Debug.WriteLine("Returning cached account events.");
@@ -300,16 +355,20 @@ public static class AccountManager
 
         if (connection.State != System.Data.ConnectionState.Open)
             throw new InvalidOperationException("Database connection is not open.");
+
         string query = 
             """
                 SELECT TOP (@N) * 
                 FROM AccountEvents 
                 ORDER BY TimeStamp DESC;
             """;
+
         List<AccountEvent> accountEvents = [];
+
         using (SqlCommand command = new SqlCommand(query, connection))
         {
             command.Parameters.AddWithValue("@N", n);
+
             using SqlDataReader reader = await command.ExecuteReaderAsync();
             while (reader.Read())
             {
@@ -332,7 +391,10 @@ public static class AccountManager
                     OldBalance = oldbalance,
                     NetWorth = netWorth
                 };
+
                 accountEvents.Add(accountEvent);
+
+                Debug.WriteLine($"Retrieved event: {accountEvent.EventType} with value {accountEvent.Value:C} at {accountEvent.TimeStamp}");
             }
         }
 
@@ -341,6 +403,8 @@ public static class AccountManager
 
     public static async Task<List<AccountEvent>> GetAllAccountEventsAsync()
     {
+        Debug.WriteLine("Retrieving all account events...");
+
         if (Cache.AccountEvents != null)
         {
             Debug.WriteLine("Returning cached account events.");
@@ -349,13 +413,16 @@ public static class AccountManager
 
         if (connection.State != System.Data.ConnectionState.Open)
             throw new InvalidOperationException("Database connection is not open.");
+
         string query =
             """
                 SELECT * 
                 FROM AccountEvents 
                 ORDER BY TimeStamp DESC;
             """;
+
         List<AccountEvent> accountEvents = [];
+
         using (SqlCommand command = new SqlCommand(query, connection))
         {
             using SqlDataReader reader = await command.ExecuteReaderAsync();
@@ -380,7 +447,10 @@ public static class AccountManager
                     OldBalance = oldbalance,
                     NetWorth = netWorth
                 };
+
                 accountEvents.Add(accountEvent);
+
+                Debug.WriteLine($"Retrieved event: {accountEvent.EventType} with value {accountEvent.Value:C} at {accountEvent.TimeStamp}");
             }
         }
 
@@ -389,8 +459,11 @@ public static class AccountManager
 
     public static async Task<List<string>> GetPayeesAsync(Account account)
     {
+        Debug.WriteLine($"Retrieving payees for account {account.AccountName} ({account.ID})...");
+
         if (connection.State != System.Data.ConnectionState.Open)
             throw new InvalidOperationException("Database connection is not open.");
+
         string query =
             """
                 SELECT DISTINCT SecondaryText 
@@ -400,16 +473,20 @@ public static class AccountManager
                     AND 
                     Type = @Type;
             """;
+
         List<string> payees = [];
+
         using (SqlCommand command = new SqlCommand(query, connection))
         {
             command.Parameters.AddWithValue("@PrimaryAccountId", account.ID);
             command.Parameters.AddWithValue("@Type", (int) AccountEventType.Payment);
+
             using SqlDataReader reader = await command.ExecuteReaderAsync();
             while (reader.Read())
             {
                 string payee = reader.GetString(0);
                 payees.Add(payee);
+                Debug.WriteLine($"Found payee: {payee} for account {account.AccountName} ({account.ID})");
             }
         }
 
@@ -418,6 +495,8 @@ public static class AccountManager
 
     public static async void MakePaymentAsync(Account account, double amount, string payee)
     {
+        Debug.WriteLine($"Making payment from account {account.AccountName} ({account.ID}): {amount:C} to {payee}");
+
         string query = 
             """
                 UPDATE Accounts 
@@ -427,8 +506,10 @@ public static class AccountManager
                 WHERE 
                     Id = @Id;
             """;
+
         if (connection.State != System.Data.ConnectionState.Open)
             throw new InvalidOperationException("Database connection is not open.");
+
         Cache.Accounts = null;
         Cache.AccountEvent.Remove(account.ID);
 
@@ -437,9 +518,10 @@ public static class AccountManager
             command.Parameters.AddWithValue("@Id", account.ID);
             command.Parameters.AddWithValue("@Value", amount);
             await command.ExecuteNonQueryAsync();
+            Debug.WriteLine($"Updated account {account.AccountName} ({account.ID}) with new balance {account.Balance - amount:C}.");
         }
 
-        AddEventAsync(account, new AccountEvent
+        AccountEvent payment = new()
         {
             EventType = AccountEventType.Payment,
             Value = amount,
@@ -448,13 +530,17 @@ public static class AccountManager
             NewBalance = account.Balance - amount,
             OldBalance = account.Balance,
             NetWorth = NetWorth
-        });
+        };
+
+        AddEventAsync(account, payment);
 
         AccountChanged?.Invoke(null, EventArgs.Empty);
     }
 
     public static async void AddInterestAsync(Account account, double interestAmount)
     {
+        Debug.WriteLine($"Adding interest to account {account.AccountName} ({account.ID}): {interestAmount:C}");
+
         if (connection.State != System.Data.ConnectionState.Open)
             throw new InvalidOperationException("Database connection is not open.");
 
@@ -470,14 +556,16 @@ public static class AccountManager
                 WHERE 
                     Id = @Id;
             """;
+
         using (SqlCommand command = new SqlCommand(query, connection))
         {
             command.Parameters.AddWithValue("@Id", account.ID);
             command.Parameters.AddWithValue("@Amount", interestAmount);
             await command.ExecuteNonQueryAsync();
+            Debug.WriteLine($"Updated account {account.AccountName} ({account.ID}) with new balance {account.Balance + interestAmount:C}.");
         }
 
-        AddEventAsync(account, new AccountEvent
+        AccountEvent interest = new()
         {
             EventType = AccountEventType.Interest,
             Value = interestAmount,
@@ -486,13 +574,17 @@ public static class AccountManager
             NewBalance = account.Balance + interestAmount,
             OldBalance = account.Balance,
             NetWorth = NetWorth
-        });
+        };
+
+        AddEventAsync(account, interest);
 
         AccountChanged?.Invoke(null, EventArgs.Empty);
     }
 
     public static async void UpdateValueAsync(Account account, double value)
     {
+        Debug.WriteLine($"Updating value of account {account.AccountName} ({account.ID}) to {value:C}");
+
         string query = 
             """ 
                 UPDATE Accounts 
@@ -502,16 +594,20 @@ public static class AccountManager
                 WHERE 
                     Id = @Id;
             """;
+
         if (connection.State != System.Data.ConnectionState.Open)
             throw new InvalidOperationException("Database connection is not open.");
+
         Cache.Accounts = null;
         Cache.AccountEvent.Remove(account.ID);
+
         using (SqlCommand command = new SqlCommand(query, connection))
         {
             command.Parameters.AddWithValue("@Value", value);
             command.Parameters.AddWithValue("@Id", account.ID);
             command.Parameters.AddWithValue("@Change", value - account.Balance);
             await command.ExecuteNonQueryAsync();
+            Debug.WriteLine($"Updated account {account.AccountName} ({account.ID}) with new balance {value:C}.");
         }
 
         AccountEvent updateEvent = new AccountEvent
@@ -524,12 +620,16 @@ public static class AccountManager
             OldBalance = account.Balance,
             NetWorth = NetWorth
         };
+
         AddEventAsync(account, updateEvent);
+
         AccountChanged?.Invoke(null, EventArgs.Empty);
     }
 
     public static async Task<Dictionary<char, double>> GetTimeChangesAsync(Account account)
     {
+        Debug.WriteLine($"Calculating time changes for account {account.AccountName} ({account.ID})...");
+
         if (connection.State != System.Data.ConnectionState.Open)
             throw new InvalidOperationException("Database connection is not open.");
 
@@ -542,17 +642,13 @@ public static class AccountManager
                     AND TimeStamp > DATEADD(DAY, -365, GETDATE())
                 ORDER BY TimeStamp DESC;
             """;
+
         Dictionary<char, double> timeChanges = [];
         
         double weeklyStartBalance = -1;
         double monthlyStartBalance = -1;
         double quarterlyStartBalance = -1;
         double yearlyStartBalance = -1;
-
-        DateTime weekCutoff = DateTime.UtcNow.AddDays(-7);
-        DateTime monthCutoff = DateTime.UtcNow.AddMonths(-31);
-        DateTime quarterCutoff = DateTime.UtcNow.AddMonths(-3);
-        DateTime yearCutoff = DateTime.UtcNow.AddYears(-1);
 
         using (SqlCommand command = new SqlCommand(query, connection))
         {
@@ -563,23 +659,29 @@ public static class AccountManager
                 int daysAgo = reader.GetInt32(0);
                 double oldBalance = reader.GetDouble(1);
 
+                Debug.WriteLine($"Days old: {daysAgo}, Old balance: {oldBalance:C}");
+
                 if (daysAgo < 7)
                 {
+                    Debug.WriteLine($"Setting weekly start balance to {oldBalance:C}");
                     weeklyStartBalance = oldBalance;
                 }
 
                 if (daysAgo < 31)
                 {
+                    Debug.WriteLine($"Setting monthly start balance to {oldBalance:C}");
                     monthlyStartBalance = oldBalance;
                 }
 
                 if (daysAgo < 93)
                 {
+                    Debug.WriteLine($"Setting quarterly start balance to {oldBalance:C}");
                     quarterlyStartBalance = oldBalance;
                 }
 
                 if (daysAgo < 365)
                 {
+                    Debug.WriteLine($"Setting yearly start balance to {oldBalance:C}");
                     yearlyStartBalance = oldBalance;
                 }
             }
@@ -590,11 +692,19 @@ public static class AccountManager
         timeChanges['q'] = quarterlyStartBalance == -1 ? 0 : account.Balance - quarterlyStartBalance;
         timeChanges['y'] = yearlyStartBalance == -1 ? 0 : account.Balance - yearlyStartBalance;
 
+        Debug.WriteLine($"Time changes for account {account.AccountName} ({account.ID}): " +
+                          $"Weekly: {timeChanges['w']:C}, " +
+                          $"Monthly: {timeChanges['m']:C}, " +
+                          $"Quarterly: {timeChanges['q']:C}, " +
+                          $"Yearly: {timeChanges['y']:C}");
+
         return timeChanges;
     }
 
     public static async Task<Dictionary<char, double>> GetTimeChangesAsync()
     {
+        Debug.WriteLine("Calculating time changes for all accounts...");
+
         if (connection.State != System.Data.ConnectionState.Open)
             throw new InvalidOperationException("Database connection is not open.");
 
@@ -606,17 +716,13 @@ public static class AccountManager
                     TimeStamp > DATEADD(DAY, -365, GETDATE())
                 ORDER BY TimeStamp DESC;
             """;
+
         Dictionary<char, double> timeChanges = [];
 
         double weeklyStartBalance = -1;
         double monthlyStartBalance = -1;
         double quarterlyStartBalance = -1;
         double yearlyStartBalance = -1;
-
-        DateTime weekCutoff = DateTime.UtcNow.AddDays(-7);
-        DateTime monthCutoff = DateTime.UtcNow.AddMonths(-31);
-        DateTime quarterCutoff = DateTime.UtcNow.AddMonths(-3);
-        DateTime yearCutoff = DateTime.UtcNow.AddYears(-1);
 
         using (SqlCommand command = new SqlCommand(query, connection))
         {
@@ -626,23 +732,29 @@ public static class AccountManager
                 int daysAgo = reader.GetInt32(0);
                 double oldBalance = reader.GetDouble(1);
 
+                Debug.WriteLine($"Days old: {daysAgo}, Old balance: {oldBalance:C}");
+
                 if (daysAgo < 7)
                 {
+                    Debug.WriteLine($"Setting weekly start balance to {oldBalance:C}");
                     weeklyStartBalance = oldBalance;
                 }
 
                 if (daysAgo < 31)
                 {
+                    Debug.WriteLine($"Setting monthly start balance to {oldBalance:C}");
                     monthlyStartBalance = oldBalance;
                 }
 
                 if (daysAgo < 93)
                 {
+                    Debug.WriteLine($"Setting quarterly start balance to {oldBalance:C}");
                     quarterlyStartBalance = oldBalance;
                 }
 
                 if (daysAgo < 365)
                 {
+                    Debug.WriteLine($"Setting yearly start balance to {oldBalance:C}");
                     yearlyStartBalance = oldBalance;
                 }
             }
@@ -655,11 +767,19 @@ public static class AccountManager
         timeChanges['q'] = quarterlyStartBalance == -1 ? 0 : netWorth - quarterlyStartBalance;
         timeChanges['y'] = yearlyStartBalance == -1 ? 0 : netWorth - yearlyStartBalance;
 
+        Debug.WriteLine($"Time changes for all accounts: " +
+                          $"Weekly: {timeChanges['w']:C}, " +
+                          $"Monthly: {timeChanges['m']:C}, " +
+                          $"Quarterly: {timeChanges['q']:C}, " +
+                          $"Yearly: {timeChanges['y']:C}");
+
         return timeChanges;
     }
 
     public static async Task<DateTime?> GetLastUpdateAsync(Account account)
     {
+        Debug.WriteLine($"Retrieving last update time for account {account.AccountName} ({account.ID})...");
+
         if (connection.State != System.Data.ConnectionState.Open)
             throw new InvalidOperationException("Database connection is not open.");
 
@@ -670,14 +790,23 @@ public static class AccountManager
                 WHERE PrimaryAccountId = @PrimaryAccountId
                 ORDER BY TimeStamp DESC;
             """;
+
         using SqlCommand command = new SqlCommand(query, connection);
         command.Parameters.AddWithValue("@PrimaryAccountId", account.ID);
+
         using SqlDataReader reader = await command.ExecuteReaderAsync();
-        return reader.Read() ?  reader.GetDateTime(0) :  null;
+
+        DateTime? lastUpdate = reader.Read() ?  reader.GetDateTime(0) :  null;
+
+        Debug.WriteLine($"Last update for account {account.AccountName} ({account.ID}): {lastUpdate?.ToString("o") ?? "Never"}");
+
+        return lastUpdate;
     }
 
     public static async Task<Tuple<string, double>> GetHighestPayeeAsync(Account account)
     {
+        Debug.WriteLine($"Retrieving highest payee for account {account.AccountName} ({account.ID})...");
+
         string query =
             """
                 SELECT SecondaryText, SUM([Value]) AS total_paid
@@ -687,14 +816,18 @@ public static class AccountManager
                 GROUP BY SecondaryText
                 ORDER BY total_paid DESC;
             """;
+
         if (connection.State != System.Data.ConnectionState.Open)
             throw new InvalidOperationException("Database connection is not open.");
+
         string payee = "None";
         double amount = 0;
+
         using (SqlCommand command = new SqlCommand(query, connection))
         {
             command.Parameters.AddWithValue("@Type", (int) AccountEventType.Payment);
             command.Parameters.AddWithValue("@PrimaryAccountId", account.ID);
+
             using SqlDataReader reader = await command.ExecuteReaderAsync();
             if (reader.Read())
             {
@@ -702,6 +835,8 @@ public static class AccountManager
                 payee = reader.GetString(0);
             }
         }
+
+        Debug.WriteLine($"Highest payee for account {account.AccountName} ({account.ID}): {payee} with total paid {amount:C}.");
 
         return new(payee, amount);
     }

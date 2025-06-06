@@ -29,7 +29,7 @@ namespace Nova.Client.Pages.Accounts;
 /// </summary>
 public sealed partial class AccountOverviewPageDefault : Page
 {
-    public static string FormattedNetWorth => AccountManager.FormattedNetWorth;
+    public string FormattedNetWorth => AccountManager.FormattedNetWorth;
     public AccountOverviewPageDefault()
     {
         this.InitializeComponent();
