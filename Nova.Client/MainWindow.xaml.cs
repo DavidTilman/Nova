@@ -37,7 +37,7 @@ public sealed partial class MainWindow : Window
         this.InitializeComponent();
         LandingPage landingPage = new LandingPage();
         MainWindowFrame.Content = landingPage;
-        landingPage.LoadingComplete += this.MainWindow_LoadingComplete;
+        // landingPage.LoadingComplete += this.MainWindow_LoadingComplete;
 
         FadeOutStoryboard.Children.Add(new DoubleAnimation
         {

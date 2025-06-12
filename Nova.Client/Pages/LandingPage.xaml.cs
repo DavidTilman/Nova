@@ -47,7 +47,7 @@ public sealed partial class LandingPage : Page
         }
         catch (Exception ex)
         {
-            LoadingTipTextBlock.Text = "Failed to connect to database: " + ex.Message;
+            LoadingTipTextBlock.Text = "Failed to connect to database: \n" + ex.Message;
         }
     }
 }

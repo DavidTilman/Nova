@@ -10,8 +10,14 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     Loaded="Page_Loaded">
 
-    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-        <TextBlock Style="{ThemeResource DisplayTextBlockStyle}" Text="NOVA" HorizontalAlignment="Center"/>
-        <TextBlock x:Name="LoadingTipTextBlock" Style="{ThemeResource BodyTextBlockStyle}" HorizontalTextAlignment="Center" Text=""/>
-    </StackPanel>
+    <Grid VerticalAlignment="Center">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="1*" />
+        </Grid.RowDefinitions>
+        <TextBlock Grid.Row="0" Style="{ThemeResource DisplayTextBlockStyle}" Text="NOVA" HorizontalAlignment="Center" HorizontalTextAlignment="Center" FontWeight="Light" Margin="0,0,0,0"/>
+        <TextBlock Grid.Row="1" Style="{ThemeResource BodyTextBlockStyle}" Text="FINANCE" HorizontalAlignment="Center" TextAlignment="Center" FontWeight="Light" CharacterSpacing="1300" Margin="0,-12,0,16"/>
+        <TextBlock Grid.Row="2" x:Name="LoadingTipTextBlock" Style="{ThemeResource BodyTextBlockStyle}" HorizontalTextAlignment="Center"/>
+    </Grid>
 </Page>
