@@ -15,6 +15,7 @@
   <ItemGroup>
     <None Remove="Controls\AccountCardUserControl.xaml" />
     <None Remove="Controls\AccountEventCardUserControl.xaml" />
+    <None Remove="Controls\Investment\InvestmentPositionCard.xaml" />
     <None Remove="Pages\AccountsPage.xaml" />
     <None Remove="Pages\Accounts\AccountOverviewPage.xaml" />
     <None Remove="Pages\Accounts\AccountOverviewPageDefault.xaml" />
@@ -24,6 +25,7 @@
     <None Remove="Pages\Accounts\TransferFundsForm.xaml" />
     <None Remove="Pages\Accounts\UpdateValueForm.xaml" />
     <None Remove="Pages\HomePage.xaml" />
+    <None Remove="Pages\Investments\InvestmentsPage.xaml" />
     <None Remove="Pages\LandingPage.xaml" />
   </ItemGroup>
 
@@ -119,6 +121,19 @@
   </ItemGroup>
   <ItemGroup>
     <Page Update="Controls\AccountCardUserControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Pages\Investments\InvestmentsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Controls\Account\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Controls\Investment\InvestmentPositionCard.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
