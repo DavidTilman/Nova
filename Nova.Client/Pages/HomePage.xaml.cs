@@ -52,11 +52,16 @@ public sealed partial class HomePage : Page
             case "Accounts":
                 HomePageFrame.Navigate(typeof(AccountsPage), null, new DrillInNavigationTransitionInfo());
                 break;
-            case "Add Account":
-                HomePageFrame.Navigate(typeof(AddAccountPage), null, new DrillInNavigationTransitionInfo());
+            case "Investments":
+                HomePageFrame.Navigate(typeof(InvestmentsPage), null, new DrillInNavigationTransitionInfo());
                 break;
             default:
                 break;
         }
+    }
+
+    private void AddAccountsPageFlyoutItem_Click(object sender, RoutedEventArgs e)
+    {
+        HomePageFrame.Navigate(typeof(AccountsPage), null, new DrillInNavigationTransitionInfo());
     }
 }

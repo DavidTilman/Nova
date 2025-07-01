@@ -364,4 +364,5 @@ FodyWeavers.xsd
 
 # App Config
 /Nova.Client/AppStatus.cs
-/Nova/Database/Config.cs
+/Nova/Database/DBConfig.cs
+/Nova/APIs/APIConfig.cs

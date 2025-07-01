@@ -8,7 +8,7 @@ using System.Security.Cryptography;
 namespace Nova.Database;
 public static class AccountManager
 {
-    private static readonly SqlConnection connection = new SqlConnection(Config.ConnectionString);
+    private static readonly SqlConnection connection = new SqlConnection(DBConfig.ConnectionString);
     
     public static event EventHandler? AccountChanged;
     public static double NetWorth => GetAccounts().Sum(a => a.Balance);
