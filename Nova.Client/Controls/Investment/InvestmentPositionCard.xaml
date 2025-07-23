@@ -21,7 +21,7 @@
             <TextBlock Text="{x:Bind CurrentPrice}" Grid.Column="1"/>
             <TextBlock Text="{x:Bind AveragePrice}" Grid.Column="2"/>
             <TextBlock Text="{x:Bind Quantity}" Grid.Column="3"/>
-            <TextBlock Text="{x:Bind Gain}" Grid.Column="4"/>
+            <TextBlock x:Name="GainTextBlock" Text="{x:Bind Gain}" Grid.Column="4"/>
         </Grid>
     </Border>
 </UserControl>

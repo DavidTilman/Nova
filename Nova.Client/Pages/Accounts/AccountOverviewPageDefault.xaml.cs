@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 
+using Nova.APIs;
 using Nova.Database;
 
 using Syncfusion.UI.Xaml.Charts;

@@ -22,7 +22,6 @@ public static class AccountManager
             return;
 
         await connection.OpenAsync();
-
         Debug.WriteLine("Connected to database successfully.");
     }
 
