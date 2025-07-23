@@ -33,6 +33,6 @@ internal class Kraken
         var response = await HttpClient.SendAsync(request);
         string responseJson = await response.Content.ReadAsStringAsync();
 
-        return responseJson;
+        Debug.WriteLine(responseJson);
     }
 }
