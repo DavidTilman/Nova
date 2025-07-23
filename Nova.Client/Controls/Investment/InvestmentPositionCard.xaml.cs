@@ -33,6 +33,10 @@ public sealed partial class InvestmentPositionCard : UserControl
     {
         Position = position;
         this.InitializeComponent();
+
+        GainTextBlock.Foreground = position!.Gain > 0
+                ? (SolidColorBrush) Application.Current.Resources["SystemFillColorSuccessBrush"]
+                : (SolidColorBrush) Application.Current.Resources["SystemFillColorCriticalBrush"];
     }
 
     public InvestmentPositionCard()

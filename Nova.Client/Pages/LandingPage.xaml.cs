@@ -11,6 +11,7 @@ using Nova.Database;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -38,16 +39,25 @@ public sealed partial class LandingPage : Page
 
     private async Task AttemptLoadAsync()
     {
+
         LoadingTipTextBlock.Text = "Connecting to database...";
 
-        try
+        int attempts = 0;
+        bool connected = false;
+        do
         {
-            await AccountManager.ConnectAsync();
-            LoadingComplete?.Invoke(this, EventArgs.Empty);
-        }
-        catch (Exception ex)
-        {
-            LoadingTipTextBlock.Text = "Failed to connect to database: \n" + ex.Message;
-        }
+            try
+            {
+                attempts++;
+                await AccountManager.ConnectAsync();
+                connected = true;
+            }
+            catch (Exception ex)
+            {
+                LoadingTipTextBlock.Text = $"Failed to connect to database: \n{ex.Message}\nReconnecting... (Attempt {attempts})";
+            }
+        } 
+        while (!connected);
+        LoadingComplete?.Invoke(this, EventArgs.Empty);
     }
 }

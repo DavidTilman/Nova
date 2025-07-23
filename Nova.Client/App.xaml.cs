@@ -7,6 +7,8 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.UI.Xaml.Shapes;
 
+using Nova.APIs;
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -34,6 +36,9 @@ public partial class App : Application
     public App()
     {
         Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense(AppStatus.SyncfusionLicense);
+
+        
+
         this.InitializeComponent();
     }
 

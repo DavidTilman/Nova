@@ -8,7 +8,17 @@ using System.Security.Cryptography;
 namespace Nova.Database;
 public static class AccountManager
 {
-    private static readonly SqlConnection connection = new SqlConnection(DBConfig.ConnectionString);
+    private static readonly SqlConnection connection = new SqlConnection
+        (
+            new SqlConnectionStringBuilder(DBConfig.ConnectionString)
+                {
+                    Encrypt = true,
+                    TrustServerCertificate = false,
+                    ConnectTimeout = 60,
+                    MultipleActiveResultSets = true,
+                    ConnectRetryCount = 5
+                }.ConnectionString
+        );
     
     public static event EventHandler? AccountChanged;
     public static double NetWorth => GetAccounts().Sum(a => a.Balance);
@@ -22,7 +32,6 @@ public static class AccountManager
             return;
 
         await connection.OpenAsync();
-
         Debug.WriteLine("Connected to database successfully.");
     }
 
