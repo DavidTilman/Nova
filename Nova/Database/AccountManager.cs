@@ -26,6 +26,8 @@ public static class AccountManager
 
     public static async Task ConnectAsync()
     {
+        Debug.WriteLine(DBConfig.ConnectionString);
+
         Debug.WriteLine("Attempting to connect to database...");
 
         if (connection.State == System.Data.ConnectionState.Open)

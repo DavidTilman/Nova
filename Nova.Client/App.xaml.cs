@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
@@ -37,7 +38,7 @@ public partial class App : Application
     {
         Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense(AppStatus.SyncfusionLicense);
 
-        
+
 
         this.InitializeComponent();
     }
