@@ -29,4 +29,15 @@ public class Account
     public double FractionOfNetWorth => this.Balance / (Database.AccountManager.NetWorth == 0 ? 1 : Database.AccountManager.NetWorth);
 
     public string FormattedPercentageOfNetWorth => $"{this.FractionOfNetWorth:P2} of your networth";
+
+    public static Account FromReader(Npgsql.NpgsqlDataReader reader) => new Account()
+    {
+        ID = reader.GetInt32(0),
+        AccountName = reader.GetString(1),
+        AccountProvider = reader.GetString(2),
+        AccountType = (AccountType) reader.GetInt32(3),
+        Balance = reader.GetDouble(4),
+        DateCreated = reader.GetDateTime(5),
+        Change = reader.GetDouble(6)
+    };
 }
