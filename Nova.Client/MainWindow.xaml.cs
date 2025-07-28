@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Runtime.InteropServices.WindowsRuntime;
 
 using Windows.Foundation;
@@ -73,6 +74,4 @@ public sealed partial class MainWindow : Window
     private void MainWindow_LoadingComplete(object? sender, EventArgs e) => this.FadeOutStoryboard.Begin();
 
     public Frame GetMainWindowFrame => MainWindowFrame;
-
-    private void Window_Closed(object sender, WindowEventArgs args) => AccountManager.Disconnect();
 }

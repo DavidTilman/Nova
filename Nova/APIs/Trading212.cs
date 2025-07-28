@@ -12,12 +12,23 @@ public static class Trading212
 
     public static async Task<List<Trading212Position>> GetPositions()
     {
+        if (LastCallTime != null && (DateTime.Now - LastCallTime) < TimeSpan.FromMinutes(15))
+            return System.Text.Json.JsonSerializer.Deserialize<List<Trading212Position>>(LastCallContent!) ?? new List<Trading212Position>();
+        
         HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, "https://live.trading212.com/api/v0/equity/portfolio");
         request.Headers.Add("Authorization", APIConfig.Trading212ApiKey);
         HttpResponseMessage response = HttpClient.Send(request);
         Debug.WriteLine($"Response: {response.StatusCode}");
         string responseContent = await response.Content.ReadAsStringAsync();
         List<Trading212Position> trading212Positions = System.Text.Json.JsonSerializer.Deserialize<List<Trading212Position>>(responseContent) ?? new List<Trading212Position>();
+
+        LastCallTime = DateTime.Now;
+        LastCallContent = responseContent;
+
         return trading212Positions;
     }
+
+    private static DateTime? LastCallTime = null;
+
+    private static string? LastCallContent = null;
 }

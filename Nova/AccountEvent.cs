@@ -1,5 +1,7 @@
 ﻿using Microsoft.Identity.Client;
 
+using Nova.Database;
+
 using Npgsql;
 
 using System;
@@ -31,34 +33,34 @@ public class AccountEvent
     public required double NetWorth { get; set; } = -1;
     public string FormattedNewBalance => this.NewBalance.ToString("C");
 
-    public static AccountEvent FromReader(NpgsqlDataReader reader) => new AccountEvent
+    public static async Task<AccountEvent> FromReader(NpgsqlDataReader reader) => new AccountEvent
     {
+        AccountName = (await AccountManager.GetAccountAsync(reader.GetInt32(1))).AccountName,
         EventType = (AccountEventType) reader.GetInt32(2),
-        Value = reader.IsDBNull(3) ? null : reader.GetDouble(3),
+        Value = reader.IsDBNull(3) ? null : Convert.ToDouble(reader.GetDecimal(3)),
         SecondaryAccountName = reader.IsDBNull(4) ? null : reader.GetString(4),
         TimeStamp = reader.GetDateTime(5),
-        NewBalance = reader.GetDouble(6),
-        OldBalance = reader.GetDouble(7),
-        NetWorth = reader.GetDouble(8)
+        NewBalance = Convert.ToDouble(reader.GetDecimal(6)),
+        OldBalance = Convert.ToDouble(reader.GetDecimal(7)),
+        NetWorth = Convert.ToDouble(reader.GetDecimal(8))
     };
 
     public static NpgsqlCommand InsertCommand(Account account, AccountEvent accountEvent)
     {
-        string query =
-            """
-                INSERT INTO Account_Events (PrimaryAccountId, Type, Value, SecondaryText, TimeStamp, NewBalance, OldBalance, NetWorth) 
-                VALUES (@PrimaryAccountId, @Type, @Value, @SecondaryText, @TimeStamp, @NewBalance, @OldBalance, @NetWorth);
-            """;
+        string query = """
+            INSERT INTO account_events (account_id, type, value, description, timestamp, new_balance, old_balance, net_worth) 
+            VALUES (@PrimaryAccountId, @Type, @Value, @SecondaryText, @TimeStamp, @NewBalance, @OldBalance, @NetWorth);
+        """;
 
         NpgsqlCommand command = new NpgsqlCommand(query);
-        command.Parameters.AddWithValue("@PrimaryAccountId", account.ID);
-        command.Parameters.AddWithValue("@Type", accountEvent.EventType);
-        command.Parameters.AddWithValue("@Value", (object?) accountEvent.Value ?? DBNull.Value);
-        command.Parameters.AddWithValue("@SecondaryText", (object?) accountEvent.SecondaryAccountName ?? DBNull.Value);
-        command.Parameters.AddWithValue("@TimeStamp", accountEvent.TimeStamp);
-        command.Parameters.AddWithValue("@NewBalance", accountEvent.NewBalance);
-        command.Parameters.AddWithValue("@OldBalance", accountEvent.OldBalance);
-        command.Parameters.AddWithValue("@NetWorth", accountEvent.NetWorth);
+        command.Parameters.Add("@PrimaryAccountId", NpgsqlTypes.NpgsqlDbType.Integer).Value = account.ID;
+        command.Parameters.Add("@Type", NpgsqlTypes.NpgsqlDbType.Integer).Value = (int) accountEvent.EventType;
+        command.Parameters.Add("@Value", NpgsqlTypes.NpgsqlDbType.Numeric).Value = accountEvent.Value.HasValue ? Convert.ToDecimal(accountEvent.Value.Value) : (object) DBNull.Value;
+        command.Parameters.Add("@SecondaryText", NpgsqlTypes.NpgsqlDbType.Text).Value = (object?) accountEvent.SecondaryAccountName ?? DBNull.Value;
+        command.Parameters.Add("@TimeStamp", NpgsqlTypes.NpgsqlDbType.TimestampTz).Value = accountEvent.TimeStamp;
+        command.Parameters.Add("@NewBalance", NpgsqlTypes.NpgsqlDbType.Numeric).Value = Convert.ToDecimal(accountEvent.NewBalance);
+        command.Parameters.Add("@OldBalance", NpgsqlTypes.NpgsqlDbType.Numeric).Value = Convert.ToDecimal(accountEvent.OldBalance);
+        command.Parameters.Add("@NetWorth", NpgsqlTypes.NpgsqlDbType.Numeric).Value = Convert.ToDecimal(accountEvent.NetWorth);
 
         return command;
     }

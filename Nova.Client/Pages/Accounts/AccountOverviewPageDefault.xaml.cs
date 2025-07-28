@@ -35,7 +35,7 @@ public sealed partial class AccountOverviewPageDefault : Page
     {
         this.InitializeComponent();
 
-        NumberAccountsTextBlock.Text = AccountManager.GetAccounts().Count.ToString();
+        NumberAccountsTextBlock.Text = AccountManager.GetAccountsAsync().Result.Count.ToString();
         
         this.DispatcherQueue.TryEnqueue(async () =>
         {

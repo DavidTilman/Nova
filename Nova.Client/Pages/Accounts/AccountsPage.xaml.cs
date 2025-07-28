@@ -36,8 +36,7 @@ public sealed partial class AccountsPage : Page
     public AccountsPage()
     {
         this.InitializeComponent();
-        List<Nova.Account> accounts = AccountManager.GetAccounts();
-
+        List<Nova.Account> accounts = AccountManager.GetAccountsAsync().Result;
         foreach (Nova.Account account in accounts)
         {
             AccountCardGridView.Items.Add(new Controls.AccountCardUserControl(account));

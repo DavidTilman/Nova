@@ -32,10 +32,7 @@ public sealed partial class HomePage : Page
     public HomePage()
     {
         this.InitializeComponent();
-        List<Nova.Account> accounts = AccountManager.GetAccounts();
-
         Nova.Database.AccountManager.AccountChanged += this.AccountManager_AccountChanged;
-        
     }
 
     private void AccountManager_AccountChanged(object? sender, EventArgs e) {
@@ -62,6 +59,6 @@ public sealed partial class HomePage : Page
 
     private void AddAccountsPageFlyoutItem_Click(object sender, RoutedEventArgs e)
     {
-        HomePageFrame.Navigate(typeof(AccountsPage), null, new DrillInNavigationTransitionInfo());
+        HomePageFrame.Navigate(typeof(AddAccountPage), null, new DrillInNavigationTransitionInfo());
     }
 }

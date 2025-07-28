@@ -19,6 +19,8 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
+using WinRT;
+
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
@@ -151,8 +153,8 @@ public sealed partial class AccountOverviewPage : Page
 
         this.DispatcherQueue.TryEnqueue(async () =>
         {
-            Tuple<string, double> highestPayee = await Nova.Database.AccountManager.GetHighestPayeeAsync(account);
-            string payeeText = $"{highestPayee.Item1} ({highestPayee.Item2:C})";
+            (string payee, double amount) highestPayee = await Nova.Database.AccountManager.GetHighestPayeeAsync(account);
+            string payeeText = $"{highestPayee.payee} ({highestPayee.amount:C})";
 
             HighestPayeeTextBlock.Text = payeeText;
         });
@@ -161,15 +163,7 @@ public sealed partial class AccountOverviewPage : Page
         {
             AddIncomeButton.Visibility = Visibility.Collapsed;
             MakePaymentButton.Visibility = Visibility.Collapsed;
-        }
 
-        if (account.AccountType != AccountType.Investment)
-        {
-            UpdateValueButton.Visibility = Visibility.Collapsed;
-        }
-
-        if (Account.AccountType != AccountType.Current)
-        {
             AllTimeIncomeLabelTextBlock.Visibility = Visibility.Collapsed;
             AllTimeIncomeTextBlock.Visibility = Visibility.Collapsed;
 
@@ -238,7 +232,7 @@ public sealed partial class AccountOverviewPage : Page
         if (transferForm.ToAccountID == -1)
             return;
 
-        Account toAccount = Nova.Database.AccountManager.GetAccount(transferForm.ToAccountID);
+        Account toAccount = Nova.Database.AccountManager.GetAccountAsync(transferForm.ToAccountID).Result;
         try
         {
             Nova.Database.AccountManager.MakeTransferAsync(toAccount, Account, transferForm.TransferAmount);

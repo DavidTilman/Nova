@@ -36,8 +36,8 @@ public class Account
         AccountName = reader.GetString(1),
         AccountProvider = reader.GetString(2),
         AccountType = (AccountType) reader.GetInt32(3),
-        Balance = reader.GetDouble(4),
+        Balance = Convert.ToDouble(reader.GetDecimal(4)),
         DateCreated = reader.GetDateTime(5),
-        Change = reader.GetDouble(6)
+        Change = Convert.ToDouble(reader.GetDecimal(6))
     };
 }

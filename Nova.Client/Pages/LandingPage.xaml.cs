@@ -35,9 +35,9 @@ public sealed partial class LandingPage : Page
 
     public event EventHandler? LoadingComplete;
 
-    private async void Page_Loaded(object sender, RoutedEventArgs e) => await this.AttemptLoadAsync();
+    private void Page_Loaded(object sender, RoutedEventArgs e) => this.AttemptLoadAsync();
 
-    private async Task AttemptLoadAsync()
+    private  void AttemptLoadAsync()
     {
 
         LoadingTipTextBlock.Text = "Connecting to database...";
@@ -49,7 +49,6 @@ public sealed partial class LandingPage : Page
             try
             {
                 attempts++;
-                await AccountManager.ConnectAsync();
                 connected = true;
             }
             catch (Exception ex)

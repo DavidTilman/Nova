@@ -48,7 +48,7 @@ public sealed partial class TransferFundsForm : Page
     {
         this.InitializeComponent();
         List<Account> accounts = [];
-        ToAccountComboBox.ItemsSource = from acc in Nova.Database.AccountManager.GetAccounts()
+        ToAccountComboBox.ItemsSource = from acc in Nova.Database.AccountManager.GetAccountsAsync().Result
                                         where acc.ID != account.ID
                                         select $"{acc.ID} - {acc.AccountName} - {acc.AccountProvider}";
     }

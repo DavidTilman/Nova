@@ -20,23 +20,23 @@ public static class AccountManager
 
         string query =
             """
-                INSERT INTO Accounts (Name, Provider, Type, Balance, DateCreated, Change) 
-                VALUES (@Name, @Provider, @Type, @Balance, @DateCreated, 0); 
-                SELECT SCOPE_IDENTITY();
+                INSERT INTO accounts (name, provider, type, balance, date_created, change) 
+                VALUES (@Name, @Provider, @Type, @Balance, @DateCreated, 0)
+                RETURNING id;
             """;
 
         int newAccountId;
 
         using (NpgsqlConnection connection = new NpgsqlConnection(DBConfig.ConnectionString))
         {
-            await connection.OpenAsync();
+            await connection.OpenAsync().ConfigureAwait(false);;
             
             using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
             {
                 command.Parameters.AddWithValue("@Name", account.AccountName);
                 command.Parameters.AddWithValue("@Provider", account.AccountProvider);
                 command.Parameters.AddWithValue("@Type", (byte) account.AccountType);
-                command.Parameters.AddWithValue("@Balance", account.Balance);
+                command.Parameters.AddWithValue("@Balance", Convert.ToDecimal(account.Balance));
                 command.Parameters.AddWithValue("@DateCreated", DateTime.UtcNow);
                 
                 object? result = await command.ExecuteScalarAsync();
@@ -67,14 +67,14 @@ public static class AccountManager
         string query = 
             """
                 SELECT * 
-                FROM Accounts;
+                FROM accounts;
             """;
 
         List<Account> accounts = [];
 
         using (NpgsqlConnection connection = new NpgsqlConnection(DBConfig.ConnectionString))
         {
-            await connection.OpenAsync();
+            await connection.OpenAsync().ConfigureAwait(false);
             using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
             {
                 using NpgsqlDataReader reader = command.ExecuteReader();
@@ -87,7 +87,7 @@ public static class AccountManager
                 }
             }
 
-            await connection.CloseAsync();
+            await connection.CloseAsync().ConfigureAwait(false);
         }
 
         Cache.Accounts = accounts;
@@ -103,7 +103,7 @@ public static class AccountManager
 
         using NpgsqlConnection connection = new NpgsqlConnection(DBConfig.ConnectionString);
 
-        await connection.OpenAsync();
+        await connection.OpenAsync().ConfigureAwait(false);;
 
         using (NpgsqlCommand command = AccountEvent.InsertCommand(account, accountEvent))
         {
@@ -111,7 +111,7 @@ public static class AccountManager
             await command.ExecuteNonQueryAsync();
         }
 
-        await connection.CloseAsync();
+        await connection.CloseAsync().ConfigureAwait(false);
     }
 
     public static async Task<List<AccountEvent>> GetAccountEventsAsync(Account account)
@@ -121,9 +121,9 @@ public static class AccountManager
         string query =
             """
                 SELECT * 
-                FROM Account_Events 
+                FROM account_events 
                 WHERE 
-                    PrimaryAccountId = @PrimaryAccountId 
+                    account_id = @PrimaryAccountId 
                 ORDER BY 
                     TimeStamp DESC;
             """;
@@ -132,7 +132,7 @@ public static class AccountManager
         
         using (NpgsqlConnection connection = new NpgsqlConnection(DBConfig.ConnectionString))
         {
-            await connection.OpenAsync();  
+            await connection.OpenAsync().ConfigureAwait(false);;  
             
             using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
             {
@@ -142,12 +142,12 @@ public static class AccountManager
                 
                 while (reader.Read())
                 {
-                    AccountEvent accountEvent = AccountEvent.FromReader(reader);
+                    AccountEvent accountEvent = await AccountEvent.FromReader(reader);
                     events.Add(accountEvent);
                 }
             }
 
-            await connection.CloseAsync();
+            await connection.CloseAsync().ConfigureAwait(false);
         }
 
         Cache.SpeficAccountEvents.Add(account.ID, events);
@@ -162,26 +162,26 @@ public static class AccountManager
 
         string query = 
             """
-                UPDATE Accounts 
+                UPDATE accounts 
                 SET 
-                    Balance = Balance + @Value, 
-                    Change = @Value 
+                    balance = balance + @Value::money, 
+                    change = @Value::money
                 WHERE 
-                    Id = @Id;
+                    id = @Id;
             """;
 
         using (NpgsqlConnection connection = new NpgsqlConnection(DBConfig.ConnectionString))
         {
-            await connection.OpenAsync();
+            await connection.OpenAsync().ConfigureAwait(false);;
 
             using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
             {
-                command.Parameters.AddWithValue("@Value", value);
+                command.Parameters.AddWithValue("@Value", Convert.ToDecimal(value));
                 command.Parameters.AddWithValue("@Id", account.ID);
                 await command.ExecuteNonQueryAsync();
             }
 
-            await connection.CloseAsync();
+            await connection.CloseAsync().ConfigureAwait(false);
         }
 
         AccountEvent incomeEvent = AccountEvent.IncomeEvent(account, source, value, NetWorth); 
@@ -191,7 +191,7 @@ public static class AccountManager
         AccountChanged?.Invoke(null, EventArgs.Empty);
     }
 
-    public static async Task<Account> GetAccount(int id)
+    public static async Task<Account> GetAccountAsync(int id)
     {
         if (Cache.Accounts == null) await GetAccountsAsync();
 
@@ -209,42 +209,42 @@ public static class AccountManager
         
         string query = 
             """
-                UPDATE Accounts 
+                UPDATE accounts 
                 SET 
-                    Balance = Balance + @Value, 
-                    Change = @Value 
+                    balance = balance + @Value::money, 
+                    change = @Value::money
                 WHERE 
-                    Id = @ToId; 
+                    id = @ToId; 
                 
-                UPDATE Accounts 
+                UPDATE accounts 
                 SET 
-                    Balance = Balance - @Value, 
-                    Change = @Value * -1 
+                    balance = balance - @Value::money, 
+                    change = @Value::money* -1 
                 WHERE 
-                    Id = @FromId;
+                    id = @FromId;
             """;
 
         using (NpgsqlConnection connection = new NpgsqlConnection(DBConfig.ConnectionString))
         {
-            await connection.OpenAsync();
+            await connection.OpenAsync().ConfigureAwait(false);;
 
             using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
             {
-                command.Parameters.AddWithValue("@Value", value);
+                command.Parameters.AddWithValue("@Value", Convert.ToDecimal(value));
                 command.Parameters.AddWithValue("@ToId", accountTo.ID);
                 command.Parameters.AddWithValue("@FromId", accountFrom.ID);
                 await command.ExecuteNonQueryAsync();
             }
 
-            await connection.CloseAsync();
+            await connection.CloseAsync().ConfigureAwait(false);
         }
 
         (AccountEvent eventTo, AccountEvent eventFrom) transferEvents = AccountEvent.TransferAccountEvents(accountTo, accountFrom, value, NetWorth);
 
 
-        AddEventAsync(accountTo, transferEvents.eventFrom);
+        AddEventAsync(accountTo, transferEvents.eventTo);
 
-        AddEventAsync(accountFrom, transferEvents.eventTo);
+        AddEventAsync(accountFrom, transferEvents.eventFrom);
 
         AccountChanged?.Invoke(null, EventArgs.Empty);
     }
@@ -255,16 +255,17 @@ public static class AccountManager
         
         string query = 
             """
-                SELECT TOP (@N) * 
-                FROM Account_Events 
-                ORDER BY TimeStamp DESC;
+                SELECT * 
+                FROM account_events 
+                ORDER BY timestamp DESC
+                LIMIT @N;
             """;
 
         List<AccountEvent> Account_Events = [];
         
         using (NpgsqlConnection connection = new NpgsqlConnection(DBConfig.ConnectionString))
         {
-            await connection.OpenAsync();
+            await connection.OpenAsync().ConfigureAwait(false);;
             using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
             {
                 command.Parameters.AddWithValue("@N", n);
@@ -273,13 +274,13 @@ public static class AccountManager
 
                 while (reader.Read())
                 {
-                    AccountEvent accountEvent = AccountEvent.FromReader(reader);
+                    AccountEvent accountEvent = await AccountEvent.FromReader(reader);
 
                     Account_Events.Add(accountEvent);
                 }
             }
 
-            await connection.CloseAsync();
+            await connection.CloseAsync().ConfigureAwait(false);
         }
 
         return Account_Events;
@@ -296,46 +297,27 @@ public static class AccountManager
         string query =
             """
                 SELECT * 
-                FROM Account_Events 
-                ORDER BY TimeStamp DESC;
+                FROM account_events 
+                ORDER BY timestamp DESC;
             """;
 
         List<AccountEvent> accountEvents = [];
         
         using (NpgsqlConnection connection = new NpgsqlConnection(DBConfig.ConnectionString))
         {
-            await connection.OpenAsync();
+            await connection.OpenAsync().ConfigureAwait(false);;
             using (NpgsqlCommand command = new NpgsqlCommand(query, connection))    
             {
                 using NpgsqlDataReader reader = await command.ExecuteReaderAsync();
                 
                 while (reader.Read())
                 {
-                    int accountId = reader.GetInt32(1);
-                    AccountEventType eventType = (AccountEventType) reader.GetInt32(2);
-                    double? value = reader.IsDBNull(3) ? null : reader.GetDouble(3);
-                    string? secondaryAccountName = reader.IsDBNull(4) ? null : reader.GetString(4);
-                    DateTime timeStamp = reader.GetDateTime(5);
-                    double newBalance = reader.GetDouble(6);
-                    double oldbalance = reader.GetDouble(7);
-                    double netWorth = reader.GetDouble(8);
-                    AccountEvent accountEvent = new AccountEvent
-                    {
-                        AccountName = (await GetAccount(accountId)).AccountName,
-                        EventType = eventType,
-                        Value = value,
-                        SecondaryAccountName = secondaryAccountName,
-                        TimeStamp = timeStamp,
-                        NewBalance = newBalance,
-                        OldBalance = oldbalance,
-                        NetWorth = netWorth
-                    };
-
+                    AccountEvent accountEvent = await AccountEvent.FromReader(reader);
                     accountEvents.Add(accountEvent);
 
                 }
             }
-            await connection.CloseAsync();
+            await connection.CloseAsync().ConfigureAwait(false);
         }
 
         return accountEvents;
@@ -345,19 +327,19 @@ public static class AccountManager
     {
         string query =
             """
-                SELECT DISTINCT SecondaryText 
-                FROM Account_Events 
+                SELECT DISTINCT description 
+                FROM account_events 
                 WHERE 
-                    PrimaryAccountId = @PrimaryAccountId
+                    account_id = @PrimaryAccountId
                     AND 
-                    Type = @Type;
+                    type = @Type;
             """;
 
         List<string> payees = [];
 
         using (NpgsqlConnection connection = new NpgsqlConnection(DBConfig.ConnectionString))
         {
-            await connection.OpenAsync();
+            await connection.OpenAsync().ConfigureAwait(false);;
             
             using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
             {
@@ -372,7 +354,7 @@ public static class AccountManager
                 }
             }
 
-            await connection.CloseAsync();
+            await connection.CloseAsync().ConfigureAwait(false);
         }
 
         return payees;
@@ -385,27 +367,27 @@ public static class AccountManager
 
         string query = 
             """
-                UPDATE Accounts 
+                UPDATE accounts 
                 SET 
-                    Balance = Balance - @Value, 
-                    Change = @Value * -1 
+                    balance = balance - @Value::money, 
+                    change = @Value::money * -1 
                 WHERE 
-                    Id = @Id;
+                    id = @Id;
             """;
 
         using (NpgsqlConnection connection = new NpgsqlConnection(DBConfig.ConnectionString))
         {
-            await connection.OpenAsync();
+            await connection.OpenAsync().ConfigureAwait(false);;
 
             using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
             {
                 command.Parameters.AddWithValue("@Id", account.ID);
-                command.Parameters.AddWithValue("@Value", amount);
+                command.Parameters.AddWithValue("@Value", Convert.ToDecimal(amount));
 
                 await command.ExecuteNonQueryAsync();
             }
 
-            await connection.CloseAsync();
+            await connection.CloseAsync().ConfigureAwait(false);
         }
 
         AccountEvent paymentEvent = AccountEvent.PaymentEvent(account, payee, amount, NetWorth);
@@ -421,26 +403,26 @@ public static class AccountManager
 
         string query = 
             """
-                UPDATE Accounts 
+                UPDATE accounts 
                 SET 
-                    Balance = Balance + @Amount, 
-                    Change = @Amount 
+                    balance = balance + @Amount::money, 
+                    change = @Amount 
                 WHERE 
-                    Id = @Id;
+                    id = @Id;
             """;
 
         using (NpgsqlConnection connection = new NpgsqlConnection(DBConfig.ConnectionString))
         {
-            await connection.OpenAsync();
+            await connection.OpenAsync().ConfigureAwait(false);;
 
             using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
             {
                 command.Parameters.AddWithValue("@Id", account.ID);
-                command.Parameters.AddWithValue("@Amount", interestAmount);
+                command.Parameters.AddWithValue("@Amount", Convert.ToDecimal(interestAmount));
                 await command.ExecuteNonQueryAsync();
             }
 
-            await connection.CloseAsync();
+            await connection.CloseAsync().ConfigureAwait(false);
         }
 
         AccountEvent interestEvent = AccountEvent.InterestEvent(account, interestAmount, NetWorth);
@@ -456,27 +438,27 @@ public static class AccountManager
         
         string query = 
             """ 
-                UPDATE Accounts 
+                UPDATE accounts 
                 SET 
-                    Balance = @Value, 
-                    Change = @Change 
+                    balance = @Value::money, 
+                    change = @Change::money
                 WHERE 
-                    Id = @Id;
+                    id = @Id;
             """;
 
         using (NpgsqlConnection connection = new NpgsqlConnection(DBConfig.ConnectionString))
         {
-            await connection.OpenAsync();
+            await connection.OpenAsync().ConfigureAwait(false);;
 
             using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
             {
-                command.Parameters.AddWithValue("@Value", value);
+                command.Parameters.AddWithValue("@Value", Convert.ToDecimal(value));
                 command.Parameters.AddWithValue("@Id", account.ID);
-                command.Parameters.AddWithValue("@Change", value - account.Balance);
+                command.Parameters.AddWithValue("@Change", Convert.ToDecimal(value - account.Balance));
                 await command.ExecuteNonQueryAsync();
             }
 
-            await connection.CloseAsync();
+            await connection.CloseAsync().ConfigureAwait(false);
         }
 
         AccountEvent updateEvent = AccountEvent.UpdateValueEvent(account, value, NetWorth);
@@ -489,12 +471,11 @@ public static class AccountManager
     {
         string query =
             """
-                SELECT DATEDIFF(DAY, TimeStamp, GETDATE()) as DaysOld, NewBalance
-                FROM Account_Events
+                SELECT (CURRENT_DATE - timestamp::date)::int, new_balance
+                FROM account_events
                 WHERE 
-                    PrimaryAccountId = @PrimaryAccountId
-                    AND TimeStamp > DATEADD(DAY, -365, GETDATE())
-                ORDER BY TimeStamp DESC;
+                    timestamp > CURRENT_DATE - INTERVAL '365 days' AND account_id = @PrimaryAccountId
+                ORDER BY timestamp DESC;
             """;
 
         Dictionary<char, double> timeChanges = [];
@@ -506,7 +487,7 @@ public static class AccountManager
 
         using (NpgsqlConnection connection = new NpgsqlConnection(DBConfig.ConnectionString))
         {
-            await connection.OpenAsync();
+            await connection.OpenAsync().ConfigureAwait(false);;
 
             using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
             {
@@ -515,7 +496,7 @@ public static class AccountManager
                 while (reader.Read())
                 {
                     int daysAgo = reader.GetInt32(0);
-                    double oldBalance = reader.GetDouble(1);
+                    double oldBalance = Convert.ToDouble(reader.GetDecimal(1));
 
 
                     if (daysAgo < 7)
@@ -540,7 +521,7 @@ public static class AccountManager
                 }
             }
 
-            await connection.CloseAsync();
+            await connection.CloseAsync().ConfigureAwait(false);
         }
 
         timeChanges['w'] = weeklyStartBalance == -1 ? 0 : account.Balance - weeklyStartBalance;
@@ -553,13 +534,29 @@ public static class AccountManager
 
     public static async Task<Dictionary<char, double>> GetTimeChangesAsync()
     {
-        string query =
+        string selectAllEvents =
             """
-                SELECT DATEDIFF(DAY, TimeStamp, GETDATE()) as DaysOld, NewBalance
-                FROM Account_Events
+                SELECT (CURRENT_DATE - timestamp::date)::int, new_balance
+                FROM account_events
                 WHERE 
-                    TimeStamp > DATEADD(DAY, -365, GETDATE())
-                ORDER BY TimeStamp DESC;
+                    timestamp > CURRENT_DATE - INTERVAL '365 days'
+                ORDER BY timestamp DESC;
+            """;
+
+        string selectStartingNetworth =
+            """
+                SELECT
+                SUM(new_balance) - (
+                    SELECT new_balance
+                    FROM account_events
+                    WHERE type = 0
+                    ORDER BY timestamp ASC
+                    LIMIT 1
+                )
+                FROM account_events
+                WHERE
+                    timestamp > CURRENT_DATE - INTERVAL '365 days' AND
+                    type = 0;
             """;
 
         Dictionary<char, double> timeChanges = [];
@@ -569,15 +566,19 @@ public static class AccountManager
         double quarterlyStartBalance = -1;
         double yearlyStartBalance = -1;
 
+        double startingAccountBalances = 0;
+
         using (NpgsqlConnection connection = new NpgsqlConnection(DBConfig.ConnectionString))
         {
-            using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
+            await connection.OpenAsync().ConfigureAwait(false);
+
+            using (NpgsqlCommand command = new NpgsqlCommand(selectAllEvents, connection))
             {
                 using NpgsqlDataReader reader = await command.ExecuteReaderAsync();
                 while (reader.Read())
                 {
                     int daysAgo = reader.GetInt32(0);
-                    double oldBalance = reader.GetDouble(1);
+                    double oldBalance = Convert.ToDouble(reader.GetDecimal(1));
 
 
                     if (daysAgo < 7)
@@ -602,16 +603,25 @@ public static class AccountManager
                 }
             }
 
-            await connection.CloseAsync();
+            using (NpgsqlCommand command = new NpgsqlCommand(selectStartingNetworth, connection))
+            {
+                object? result = await command.ExecuteScalarAsync();
+                if (result != null && result != DBNull.Value)
+                {
+                    startingAccountBalances = Convert.ToDouble(result);
+                }
+            }
+
+            await connection.CloseAsync().ConfigureAwait(false);
         }
 
 
         double netWorth = NetWorth;
 
-        timeChanges['w'] = weeklyStartBalance == -1 ? 0 : netWorth - weeklyStartBalance;
-        timeChanges['m'] = monthlyStartBalance == -1 ? 0 : netWorth - monthlyStartBalance;
-        timeChanges['q'] = quarterlyStartBalance == -1 ? 0 : netWorth - quarterlyStartBalance;
-        timeChanges['y'] = yearlyStartBalance == -1 ? 0 : netWorth - yearlyStartBalance;
+        timeChanges['w'] = weeklyStartBalance == -1 ? 0 : netWorth - startingAccountBalances - weeklyStartBalance;
+        timeChanges['m'] = monthlyStartBalance == -1 ? 0 : netWorth - startingAccountBalances - monthlyStartBalance;
+        timeChanges['q'] = quarterlyStartBalance == -1 ? 0 : netWorth - startingAccountBalances - quarterlyStartBalance;
+        timeChanges['y'] = yearlyStartBalance == -1 ? 0 : netWorth - startingAccountBalances - yearlyStartBalance;
 
         return timeChanges;
     }
@@ -620,17 +630,18 @@ public static class AccountManager
     {
         string query =
             """
-                SELECT TOP 1 TimeStamp
-                FROM Account_Events 
-                WHERE PrimaryAccountId = @PrimaryAccountId
-                ORDER BY TimeStamp DESC;
+                SELECT timestamp
+                FROM account_events 
+                WHERE account_id = @PrimaryAccountId
+                ORDER BY timestamp DESC
+                LIMIT 1;
             """;
 
         DateTime? lastUpdate;
 
         using (NpgsqlConnection connection = new NpgsqlConnection(DBConfig.ConnectionString))
         {
-            await connection.OpenAsync();
+            await connection.OpenAsync().ConfigureAwait(false);;
 
             using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
             {
@@ -640,7 +651,7 @@ public static class AccountManager
                 lastUpdate = reader.Read() ?  reader.GetDateTime(0) :  null;
             }
 
-            await connection.CloseAsync();
+            await connection.CloseAsync().ConfigureAwait(false);
         }
 
         return lastUpdate;
@@ -651,11 +662,11 @@ public static class AccountManager
 
         string query =
             """
-                SELECT SecondaryText, SUM([Value]) AS total_paid
-                FROM dbo.Account_Events
-                WHERE [Type] = @Type
-                AND PrimaryAccountId = @PrimaryAccountId
-                GROUP BY SecondaryText
+                SELECT description, SUM(value) AS total_paid
+                FROM account_events
+                WHERE type = @Type
+                AND account_id = @PrimaryAccountId
+                GROUP BY description
                 ORDER BY total_paid DESC;
             """;
 
@@ -664,7 +675,7 @@ public static class AccountManager
 
         using (NpgsqlConnection connection = new NpgsqlConnection(DBConfig.ConnectionString))
         {
-            await connection.OpenAsync();
+            await connection.OpenAsync().ConfigureAwait(false);;
             
             using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
             {
@@ -674,12 +685,12 @@ public static class AccountManager
                 using NpgsqlDataReader reader = await command.ExecuteReaderAsync();
                 if (reader.Read())
                 {
-                    amount = reader.GetDouble(1);
+                    amount = Convert.ToDouble(reader.GetDecimal(1));
                     payee = reader.GetString(0);
                 }
             }
 
-            await connection.CloseAsync();
+            await connection.CloseAsync().ConfigureAwait(false);
         }
 
         return new(payee, amount);
