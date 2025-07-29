@@ -94,7 +94,7 @@ public sealed partial class AccountOverviewPage : Page
             NumericalAxis yAxis = new();
             BalanceChart.YAxes.Add(yAxis);
 
-            LineSeries series = new()
+            StepLineSeries series = new()
             {
                 ItemsSource = AccountEvents,
                 XBindingPath = "TimeStamp",

@@ -59,7 +59,7 @@ public sealed partial class AccountOverviewPageDefault : Page
             NumericalAxis yAxis = new();
             NetWorthChart.YAxes.Add(yAxis);
 
-            LineSeries series = new()
+            StepLineSeries series = new()
             {
                 ItemsSource = events,
                 XBindingPath = "TimeStamp",

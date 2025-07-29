@@ -15,7 +15,7 @@
   <ItemGroup>
     <None Remove="Controls\AccountCardUserControl.xaml" />
     <None Remove="Controls\AccountEventCardUserControl.xaml" />
-    <None Remove="Controls\Investment\InvestmentPositionCard.xaml" />
+    <None Remove="Controls\Investment\CryptocurrencyInvestmentCard.xaml" />
     <None Remove="Pages\AccountsPage.xaml" />
     <None Remove="Pages\Accounts\AccountOverviewPage.xaml" />
     <None Remove="Pages\Accounts\AccountOverviewPageDefault.xaml" />
@@ -133,7 +133,12 @@
     <Folder Include="Controls\Account\" />
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Controls\Investment\InvestmentPositionCard.xaml">
+    <Page Update="Controls\Investment\CryptocurrencyInvestmentCard.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Controls\Investment\ShareInvestmentCard.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

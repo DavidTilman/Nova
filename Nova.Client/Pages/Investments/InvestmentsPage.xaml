@@ -11,6 +11,10 @@
 
     <StackPanel Margin="16">
         <TextBlock Text="Portfolio" Style="{ThemeResource TitleLargeTextBlockStyle}"/>
-        <ListView x:Name="PositionListView"/>
+        <TextBlock Text="Shares" Style="{ThemeResource TitleTextBlockStyle}"/>
+        <GridView x:Name="PositionListView"/>
+
+        <TextBlock Text="Cryptocurrencies" Style="{ThemeResource TitleTextBlockStyle}"/>
+        <ListView x:Name="CryptocurrenciesListView"/>
     </StackPanel>
 </Page>

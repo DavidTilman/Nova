@@ -21,27 +21,18 @@ using Windows.Foundation.Collections;
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace Nova.Client.Controls;
-public sealed partial class InvestmentPositionCard : UserControl
+public sealed partial class ShareInvestmentCard : UserControl
 {
     public Trading212Position? Position { get; private set; }
     public string Ticker => (Position?.Ticker) ?? "Symbol";
     public string Quantity => (Position?.Quantity.ToString()) ?? "Owned Shares";
     public string AveragePrice => ((Position?.AveragePrice / (((Position?.CurrentPrice - Position?.AveragePrice) * Position?.Quantity) / Position?.Gain))?.ToString("C")) ?? "Cur.Adj. Average Price";
     public string CurrentPrice => ((Position?.CurrentPrice / (((Position?.CurrentPrice - Position?.AveragePrice) * Position?.Quantity) / Position?.Gain))?.ToString("C")) ?? "Cur.Adj. Current Price";
-    public string Gain => (Position?.Gain.ToString("C")) ?? "Gain";
-    public InvestmentPositionCard(Trading212Position position)
+    public double Gain => Position?.Gain ?? 0;
+    public string GainFormat => Position?.Gain.ToString("C") ?? 0.ToString("C");
+    public ShareInvestmentCard(Trading212Position position)
     {
         Position = position;
-        this.InitializeComponent();
-
-        GainTextBlock.Foreground = position!.Gain > 0
-                ? (SolidColorBrush) Application.Current.Resources["SystemFillColorSuccessBrush"]
-                : (SolidColorBrush) Application.Current.Resources["SystemFillColorCriticalBrush"];
-    }
-
-    public InvestmentPositionCard()
-    {
-        Position = null;
         this.InitializeComponent();
     }
 }

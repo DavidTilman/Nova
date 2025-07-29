@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml.Navigation;
 
 using Nova.APIs;
 using Nova.Client.Controls;
+using Nova.Client.Controls.Investment;
 
 using System;
 using System.Collections.Generic;
@@ -30,14 +31,27 @@ public sealed partial class InvestmentsPage : Page
     public InvestmentsPage()
     {
         this.InitializeComponent();
+
         DispatcherQueue.TryEnqueue(async () =>
         {
-            PositionListView.Items.Add(new InvestmentPositionCard());
             List<Trading212Position> positions = await Trading212.GetPositions();
             foreach (Trading212Position position in positions)
             {
-                InvestmentPositionCard card = new InvestmentPositionCard(position);
+                ShareInvestmentCard card = new ShareInvestmentCard(position);
                 PositionListView.Items.Add(card);
+            }
+        });
+
+        DispatcherQueue.TryEnqueue(async () =>
+        {
+            CryptocurrenciesListView.Items.Add(new CryptocurrencyInvestmentCard());
+            List<KrakenPosition> positions = await Kraken.GetBalanceAsync();
+            foreach (KrakenPosition position in positions)
+            {
+                if (position.Quantity <= 0)
+                    continue; // Skip positions with zero quantity
+                CryptocurrencyInvestmentCard card = new CryptocurrencyInvestmentCard(position);
+                CryptocurrenciesListView.Items.Add(card);
             }
         });
     }

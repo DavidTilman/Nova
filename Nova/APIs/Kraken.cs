@@ -4,14 +4,15 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Nova.APIs;
-internal class Kraken
+public class Kraken
 {
     static HttpClient HttpClient { get; set; } = new HttpClient();
 
-    public static async Task GetBalanceAsync()
+    public static async Task<List<KrakenPosition>> GetBalanceAsync()
     {
         string urlPath = "/0/private/Balance";
         string apiUrl = "https://api.kraken.com" + urlPath;
@@ -33,6 +34,29 @@ internal class Kraken
         var response = await HttpClient.SendAsync(request);
         string responseJson = await response.Content.ReadAsStringAsync();
 
-        Debug.WriteLine(responseJson);
+        using JsonDocument doc = JsonDocument.Parse(responseJson);
+        var resultElement = doc.RootElement.GetProperty("result");
+
+        var dict = new Dictionary<string, decimal>();
+        foreach (var property in resultElement.EnumerateObject())
+        {
+            if (decimal.TryParse(property.Value.GetString(), out var value))
+            {
+                dict[property.Name] = value;
+            }
+        }
+
+        List<KrakenPosition> positions = new List<KrakenPosition>();
+
+        foreach (var pair in dict)
+        {
+            positions.Add(new KrakenPosition
+            {
+                Currency = pair.Key,
+                Quantity = Convert.ToDouble(pair.Value)
+            });
+        }
+
+        return positions;
     }
 }
