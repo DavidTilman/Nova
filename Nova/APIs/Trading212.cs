@@ -16,7 +16,7 @@ public static class Trading212
             return System.Text.Json.JsonSerializer.Deserialize<List<Trading212Position>>(LastCallContent!) ?? new List<Trading212Position>();
         
         HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, "https://live.trading212.com/api/v0/equity/portfolio");
-        request.Headers.Add("Authorization", APIConfig.Trading212ApiKey);
+        request.Headers.Add("Authorization", Trading212Config.ApiKey);
         HttpResponseMessage response = HttpClient.Send(request);
         Debug.WriteLine($"Response: {response.StatusCode}");
         string responseContent = await response.Content.ReadAsStringAsync();

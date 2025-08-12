@@ -27,7 +27,7 @@ public static class AccountManager
 
         int newAccountId;
 
-        using (NpgsqlConnection connection = new NpgsqlConnection(DBConfig.ConnectionString))
+        using (NpgsqlConnection connection = new NpgsqlConnection(DatabaseConfig.ConnectionString))
         {
             await connection.OpenAsync().ConfigureAwait(false);;
             
@@ -72,7 +72,7 @@ public static class AccountManager
 
         List<Account> accounts = [];
 
-        using (NpgsqlConnection connection = new NpgsqlConnection(DBConfig.ConnectionString))
+        using (NpgsqlConnection connection = new NpgsqlConnection(DatabaseConfig.ConnectionString))
         {
             await connection.OpenAsync().ConfigureAwait(false);
             using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
@@ -101,7 +101,7 @@ public static class AccountManager
         Cache.SpeficAccountEvents.Remove(account.ID);
         Cache.AllAccountEvents = null;
 
-        using NpgsqlConnection connection = new NpgsqlConnection(DBConfig.ConnectionString);
+        using NpgsqlConnection connection = new NpgsqlConnection(DatabaseConfig.ConnectionString);
 
         await connection.OpenAsync().ConfigureAwait(false);;
 
@@ -130,7 +130,7 @@ public static class AccountManager
 
         List<AccountEvent> events = [];  
         
-        using (NpgsqlConnection connection = new NpgsqlConnection(DBConfig.ConnectionString))
+        using (NpgsqlConnection connection = new NpgsqlConnection(DatabaseConfig.ConnectionString))
         {
             await connection.OpenAsync().ConfigureAwait(false);;  
             
@@ -170,7 +170,7 @@ public static class AccountManager
                     id = @Id;
             """;
 
-        using (NpgsqlConnection connection = new NpgsqlConnection(DBConfig.ConnectionString))
+        using (NpgsqlConnection connection = new NpgsqlConnection(DatabaseConfig.ConnectionString))
         {
             await connection.OpenAsync().ConfigureAwait(false);;
 
@@ -224,7 +224,7 @@ public static class AccountManager
                     id = @FromId;
             """;
 
-        using (NpgsqlConnection connection = new NpgsqlConnection(DBConfig.ConnectionString))
+        using (NpgsqlConnection connection = new NpgsqlConnection(DatabaseConfig.ConnectionString))
         {
             await connection.OpenAsync().ConfigureAwait(false);;
 
@@ -263,7 +263,7 @@ public static class AccountManager
 
         List<AccountEvent> Account_Events = [];
         
-        using (NpgsqlConnection connection = new NpgsqlConnection(DBConfig.ConnectionString))
+        using (NpgsqlConnection connection = new NpgsqlConnection(DatabaseConfig.ConnectionString))
         {
             await connection.OpenAsync().ConfigureAwait(false);;
             using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
@@ -303,7 +303,7 @@ public static class AccountManager
 
         List<AccountEvent> accountEvents = [];
         
-        using (NpgsqlConnection connection = new NpgsqlConnection(DBConfig.ConnectionString))
+        using (NpgsqlConnection connection = new NpgsqlConnection(DatabaseConfig.ConnectionString))
         {
             await connection.OpenAsync().ConfigureAwait(false);;
             using (NpgsqlCommand command = new NpgsqlCommand(query, connection))    
@@ -337,7 +337,7 @@ public static class AccountManager
 
         List<string> payees = [];
 
-        using (NpgsqlConnection connection = new NpgsqlConnection(DBConfig.ConnectionString))
+        using (NpgsqlConnection connection = new NpgsqlConnection(DatabaseConfig.ConnectionString))
         {
             await connection.OpenAsync().ConfigureAwait(false);;
             
@@ -375,7 +375,7 @@ public static class AccountManager
                     id = @Id;
             """;
 
-        using (NpgsqlConnection connection = new NpgsqlConnection(DBConfig.ConnectionString))
+        using (NpgsqlConnection connection = new NpgsqlConnection(DatabaseConfig.ConnectionString))
         {
             await connection.OpenAsync().ConfigureAwait(false);;
 
@@ -411,7 +411,7 @@ public static class AccountManager
                     id = @Id;
             """;
 
-        using (NpgsqlConnection connection = new NpgsqlConnection(DBConfig.ConnectionString))
+        using (NpgsqlConnection connection = new NpgsqlConnection(DatabaseConfig.ConnectionString))
         {
             await connection.OpenAsync().ConfigureAwait(false);;
 
@@ -446,7 +446,7 @@ public static class AccountManager
                     id = @Id;
             """;
 
-        using (NpgsqlConnection connection = new NpgsqlConnection(DBConfig.ConnectionString))
+        using (NpgsqlConnection connection = new NpgsqlConnection(DatabaseConfig.ConnectionString))
         {
             await connection.OpenAsync().ConfigureAwait(false);;
 
@@ -485,7 +485,7 @@ public static class AccountManager
         double quarterlyStartBalance = -1;
         double yearlyStartBalance = -1;
 
-        using (NpgsqlConnection connection = new NpgsqlConnection(DBConfig.ConnectionString))
+        using (NpgsqlConnection connection = new NpgsqlConnection(DatabaseConfig.ConnectionString))
         {
             await connection.OpenAsync().ConfigureAwait(false);;
 
@@ -568,7 +568,7 @@ public static class AccountManager
 
         double startingAccountBalances = 0;
 
-        using (NpgsqlConnection connection = new NpgsqlConnection(DBConfig.ConnectionString))
+        using (NpgsqlConnection connection = new NpgsqlConnection(DatabaseConfig.ConnectionString))
         {
             await connection.OpenAsync().ConfigureAwait(false);
 
@@ -639,7 +639,7 @@ public static class AccountManager
 
         DateTime? lastUpdate;
 
-        using (NpgsqlConnection connection = new NpgsqlConnection(DBConfig.ConnectionString))
+        using (NpgsqlConnection connection = new NpgsqlConnection(DatabaseConfig.ConnectionString))
         {
             await connection.OpenAsync().ConfigureAwait(false);;
 
@@ -673,7 +673,7 @@ public static class AccountManager
         string payee = "None";
         double amount = 0;
 
-        using (NpgsqlConnection connection = new NpgsqlConnection(DBConfig.ConnectionString))
+        using (NpgsqlConnection connection = new NpgsqlConnection(DatabaseConfig.ConnectionString))
         {
             await connection.OpenAsync().ConfigureAwait(false);;
             

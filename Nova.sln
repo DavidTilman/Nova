@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova", "Nova\Nova.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.Client", "Nova.Client\Nova.Client.csproj", "{345E9146-C814-4820-B38B-0DD284281B12}"
 EndProject
-Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "nova.web", "Nova.Web\nova.web.esproj", "{CE29B572-A65D-4F93-9699-8A219A21259D}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,12 +23,6 @@ Global
 		{345E9146-C814-4820-B38B-0DD284281B12}.Release|Any CPU.ActiveCfg = Release|x64
 		{345E9146-C814-4820-B38B-0DD284281B12}.Release|Any CPU.Build.0 = Release|x64
 		{345E9146-C814-4820-B38B-0DD284281B12}.Release|Any CPU.Deploy.0 = Release|x64
-		{CE29B572-A65D-4F93-9699-8A219A21259D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CE29B572-A65D-4F93-9699-8A219A21259D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CE29B572-A65D-4F93-9699-8A219A21259D}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
-		{CE29B572-A65D-4F93-9699-8A219A21259D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CE29B572-A65D-4F93-9699-8A219A21259D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CE29B572-A65D-4F93-9699-8A219A21259D}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

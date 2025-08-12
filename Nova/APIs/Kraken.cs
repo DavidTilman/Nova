@@ -21,13 +21,13 @@ public class Kraken
         string postData = $"nonce={nonce}";
 
         // Generate API-Sign
-        string signature = APIConfig.CreateSignature(urlPath, nonce, postData);
+        string signature = KrakenConfig.GetKrakenSignature(urlPath, nonce, postData);
 
         var request = new HttpRequestMessage(HttpMethod.Post, apiUrl)
         {
             Content = new StringContent(postData, Encoding.UTF8, "application/x-www-form-urlencoded")
         };
-        request.Headers.Add("API-Key", APIConfig.KrakenApiKey);
+        request.Headers.Add("API-Key", KrakenConfig.ApiKey);
         request.Headers.Add("API-Sign", signature);
 
 
