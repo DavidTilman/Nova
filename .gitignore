@@ -366,3 +366,4 @@ FodyWeavers.xsd
 /Nova.Client/AppStatus.cs
 /Nova/Database/DBConfig.cs
 /Nova/APIs/APIConfig.cs
+/Nova/Secrets
