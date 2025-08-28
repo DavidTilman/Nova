@@ -5,7 +5,9 @@ VisualStudioVersion = 17.12.35527.113
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova", "Nova\Nova.csproj", "{A8BDC561-B39F-45C9-8BEF-131B692ECC52}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.Client", "Nova.Client\Nova.Client.csproj", "{345E9146-C814-4820-B38B-0DD284281B12}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.ConsoleClient", "Nova.ConsoleClient\Nova.ConsoleClient.csproj", "{EBBA5801-7925-4872-97D8-B2B355855253}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nova.Client", "Nova.Client\Nova.Client.csproj", "{F181D257-C73D-48F3-AFC4-52F7AE14E380}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,12 +19,16 @@ Global
 		{A8BDC561-B39F-45C9-8BEF-131B692ECC52}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A8BDC561-B39F-45C9-8BEF-131B692ECC52}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A8BDC561-B39F-45C9-8BEF-131B692ECC52}.Release|Any CPU.Build.0 = Release|Any CPU
-		{345E9146-C814-4820-B38B-0DD284281B12}.Debug|Any CPU.ActiveCfg = Debug|x64
-		{345E9146-C814-4820-B38B-0DD284281B12}.Debug|Any CPU.Build.0 = Debug|x64
-		{345E9146-C814-4820-B38B-0DD284281B12}.Debug|Any CPU.Deploy.0 = Debug|x64
-		{345E9146-C814-4820-B38B-0DD284281B12}.Release|Any CPU.ActiveCfg = Release|x64
-		{345E9146-C814-4820-B38B-0DD284281B12}.Release|Any CPU.Build.0 = Release|x64
-		{345E9146-C814-4820-B38B-0DD284281B12}.Release|Any CPU.Deploy.0 = Release|x64
+		{EBBA5801-7925-4872-97D8-B2B355855253}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EBBA5801-7925-4872-97D8-B2B355855253}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EBBA5801-7925-4872-97D8-B2B355855253}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EBBA5801-7925-4872-97D8-B2B355855253}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F181D257-C73D-48F3-AFC4-52F7AE14E380}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{F181D257-C73D-48F3-AFC4-52F7AE14E380}.Debug|Any CPU.Build.0 = Debug|x64
+		{F181D257-C73D-48F3-AFC4-52F7AE14E380}.Debug|Any CPU.Deploy.0 = Debug|x64
+		{F181D257-C73D-48F3-AFC4-52F7AE14E380}.Release|Any CPU.ActiveCfg = Release|x64
+		{F181D257-C73D-48F3-AFC4-52F7AE14E380}.Release|Any CPU.Build.0 = Release|x64
+		{F181D257-C73D-48F3-AFC4-52F7AE14E380}.Release|Any CPU.Deploy.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

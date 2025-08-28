@@ -8,11 +8,11 @@
   IgnorableNamespaces="uap rescap">
 
   <Identity
-    Name="196bbf0f-81d6-411b-9259-5d1fb3988f91"
+    Name="94b56dfb-049f-4df5-90a8-be07f7307a39"
     Publisher="CN=DTilm"
     Version="1.0.0.0" />
 
-  <mp:PhoneIdentity PhoneProductId="196bbf0f-81d6-411b-9259-5d1fb3988f91" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <mp:PhoneIdentity PhoneProductId="94b56dfb-049f-4df5-90a8-be07f7307a39" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
     <DisplayName>Nova.Client</DisplayName>

@@ -13,30 +13,20 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="Controls\AccountCardUserControl.xaml" />
-    <None Remove="Controls\AccountEventCardUserControl.xaml" />
-    <None Remove="Controls\Investment\CryptocurrencyInvestmentCard.xaml" />
-    <None Remove="Pages\AccountsPage.xaml" />
-    <None Remove="Pages\Accounts\AccountOverviewPage.xaml" />
-    <None Remove="Pages\Accounts\AccountOverviewPageDefault.xaml" />
-    <None Remove="Pages\Accounts\AddAccountPage.xaml" />
-    <None Remove="Pages\Accounts\AddIncomeForm.xaml" />
-    <None Remove="Pages\Accounts\AddInterestForm.xaml" />
-    <None Remove="Pages\Accounts\TransferFundsForm.xaml" />
-    <None Remove="Pages\Accounts\UpdateValueForm.xaml" />
-    <None Remove="Pages\HomePage.xaml" />
-    <None Remove="Pages\Investments\InvestmentsPage.xaml" />
-    <None Remove="Pages\LandingPage.xaml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="Assets\SplashScreen.scale-200.png" />
-    <Content Include="Assets\LockScreenLogo.scale-200.png" />
-    <Content Include="Assets\Square150x150Logo.scale-200.png" />
-    <Content Include="Assets\Square44x44Logo.scale-200.png" />
-    <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
-    <Content Include="Assets\StoreLogo.png" />
-    <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+    <None Remove="Controls\AccountsPanel.xaml" />
+    <None Remove="Controls\AccountTabCompact.xaml" />
+    <None Remove="Controls\CryptoPanel.xaml" />
+    <None Remove="Controls\CrytpoPresenter.xaml" />
+    <None Remove="Controls\InvestmentPanel.xaml" />
+    <None Remove="Controls\InvestmentPresenter.xaml" />
+    <None Remove="Controls\InvestmentTabCompact.xaml" />
+    <None Remove="Controls\Panels\Activity\AccountEventPresenter.xaml" />
+    <None Remove="Controls\Panels\Activity\RecentActivityPanel.xaml" />
+    <None Remove="Controls\Panels\NetWorthPanel.xaml" />
+    <None Remove="Controls\Panels\WealthDistributionPanel.xaml" />
+    <None Remove="Controls\TimeChangeTab.xaml" />
+    <None Remove="Forms\PaymentFormPage.xaml" />
+    <None Remove="MainPage.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -52,93 +42,94 @@
     <ProjectCapability Include="Msix" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4188" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250513003" />
-    <PackageReference Include="Syncfusion.Chart.WinUI" Version="29.2.7" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4654" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250606001" />
+    <PackageReference Include="Syncfusion.Chart.WinUI" Version="30.2.5" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Controls\Panels\Account\" />
+    <Folder Include="Controls\Panels\Investment\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Nova\Nova.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Pages\Accounts\UpdateValueForm.xaml">
+    <Page Update="Forms\PaymentFormPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Pages\Accounts\AddInterestForm.xaml">
+    <Page Update="MainPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Pages\Accounts\MakePaymentForm.xaml">
+    <Page Update="Controls\Panels\Activity\AccountEventPresenter.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Pages\Accounts\TransferFundsForm.xaml">
+    <Page Update="Controls\Panels\Activity\RecentActivityPanel.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Pages\Accounts\AddIncomeForm.xaml">
+    <Page Update="Controls\TimeChangeTab.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Controls\AccountEventCardUserControl.xaml">
+    <Page Update="Controls\InvestmentTabCompact.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Pages\Accounts\AccountOverviewPage.xaml">
+    <Page Update="Controls\AccountTabCompact.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Pages\Accounts\AccountOverviewPageDefault.xaml">
+    <Page Update="Controls\Panels\NetWorthPanel.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Pages\Account\AddAccountPage.xaml">
+    <Page Update="Controls\Panels\WealthDistributionPanel.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Pages\AccountsPage.xaml">
+    <Page Update="Controls\CrytpoPresenter.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Pages\HomePage.xaml">
+    <Page Update="Controls\CryptoPanel.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Pages\LandingPage.xaml">
+    <Page Update="Controls\InvestmentPresenter.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Controls\AccountCardUserControl.xaml">
+    <Page Update="Controls\InvestmentPanel.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Pages\Investments\InvestmentsPage.xaml">
+    <Page Update="Controls\AccountPresenter.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Controls\Account\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="Controls\Investment\CryptocurrencyInvestmentCard.xaml">
+    <Page Update="Controls\AccountsPanel.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Controls\Investment\ShareInvestmentCard.xaml">
+    <Page Update="Controls\SidePanel.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
@@ -158,9 +149,6 @@
     <PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">True</PublishReadyToRun>
     <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
     <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
-
-	<PropertyGroup>
-		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-	</PropertyGroup>
 </Project>

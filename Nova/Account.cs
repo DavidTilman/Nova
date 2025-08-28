@@ -17,18 +17,17 @@ public enum AccountType
 public class Account
 {
     public int ID { get; set; }
-    public required string AccountName { get; set; }
-    public required AccountType AccountType { get; set; }
-    public required string AccountProvider { get; set; }
-    public required double Balance { get; set; }
-    public required DateTime DateCreated { get; set; }
-
-    public required double Change { get; set; }
+    public string AccountName { get; set; }
+    public AccountType AccountType { get; set; }
+    public string AccountProvider { get; set; }
+    public double Balance { get; set; }
+    public DateTime DateCreated { get; set; }
+    public double Change { get; set; }
     public string FormattedBalance => $"{this.Balance:C}";
     public string FormattedChange => $"{this.Change:C}";
     public double FractionOfNetWorth => this.Balance / (Database.AccountManager.NetWorth == 0 ? 1 : Database.AccountManager.NetWorth);
 
-    public string FormattedPercentageOfNetWorth => $"{this.FractionOfNetWorth:P2} of your networth";
+    public string FormattedPercentageOfNetWorth => $"{this.FractionOfNetWorth:P2}";
 
     public static Account FromReader(Npgsql.NpgsqlDataReader reader) => new Account()
     {
@@ -40,4 +39,17 @@ public class Account
         DateCreated = reader.GetDateTime(5),
         Change = Convert.ToDouble(reader.GetDecimal(6))
     };
+
+    public override string ToString() => $"{this.AccountName} {this.AccountProvider} ({this.AccountType}): {this.FormattedBalance} [{this.DateCreated}]";
+
+    public Account()
+    {
+        this.ID = -1;
+        this.AccountName = string.Empty;
+        this.AccountProvider = string.Empty;
+        this.Balance = 0;
+        this.AccountType = AccountType.None;
+        this.DateCreated = DateTime.UtcNow;
+        this.Change = 0;
+    }
 }
