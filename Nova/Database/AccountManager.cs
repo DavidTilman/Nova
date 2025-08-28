@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using Npgsql;
 using Npgsql.Replication.PgOutput.Messages;
+using Nova.Secrets;
 
 namespace Nova.Database;
 public static class AccountManager
@@ -14,7 +15,7 @@ public static class AccountManager
     public static double NetWorth => GetAccountsAsync().Result.Sum(a => a.Balance);
     public static string FormattedNetWorth => NetWorth.ToString("C");
 
-    public static async void AddAccount(Account account)
+    public static async Task AddAccountAsync(Account account)
     {
         Cache.Accounts = null;
 
@@ -57,7 +58,7 @@ public static class AccountManager
             NetWorth = NetWorth,
         };
 
-        AddEventAsync(account, creation);
+        await AddEventAsync(account, creation);
     }
 
     public static async Task<List<Account>> GetAccountsAsync()
@@ -67,7 +68,8 @@ public static class AccountManager
         string query = 
             """
                 SELECT * 
-                FROM accounts;
+                FROM accounts
+                ORDER BY Balance DESC;
             """;
 
         List<Account> accounts = [];
@@ -95,7 +97,7 @@ public static class AccountManager
         return accounts;
     }
 
-    private static async void AddEventAsync(Account account, AccountEvent accountEvent)
+    private static async Task AddEventAsync(Account account, AccountEvent accountEvent)
     {
         Cache.Accounts = null;
         Cache.SpeficAccountEvents.Remove(account.ID);
@@ -114,9 +116,9 @@ public static class AccountManager
         await connection.CloseAsync().ConfigureAwait(false);
     }
 
-    public static async Task<List<AccountEvent>> GetAccountEventsAsync(Account account)
+    public static async Task<List<AccountEvent>> GetAccountEventsByIdAsync(int accountId)
     {
-        if (Cache.SpeficAccountEvents.TryGetValue(account.ID, out List<AccountEvent>? cachedEvents)) return cachedEvents; 
+        if (Cache.SpeficAccountEvents.TryGetValue(accountId, out List<AccountEvent>? cachedEvents)) return cachedEvents; 
 
         string query =
             """
@@ -136,7 +138,7 @@ public static class AccountManager
             
             using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
             {
-                command.Parameters.AddWithValue("@PrimaryAccountId", account.ID);
+                command.Parameters.AddWithValue("@PrimaryAccountId", accountId);
 
                 using NpgsqlDataReader reader = await command.ExecuteReaderAsync();
                 
@@ -150,12 +152,17 @@ public static class AccountManager
             await connection.CloseAsync().ConfigureAwait(false);
         }
 
-        Cache.SpeficAccountEvents.Add(account.ID, events);
+        Cache.SpeficAccountEvents.Add(accountId, events);
         return events;
     }
 
-    public static async void AddIncomeAsync(Account account, double value, string source)
+    public static async Task AddIncomeAsync(Account account, double value, string source, DateTime timeStamp)
     {
+        if (account.AccountType is not AccountType.None and not AccountType.Current)
+        {
+            throw new InvalidOperationException("Income can only be added to Current accounts.");
+        }
+
         Cache.Accounts = null;
         Cache.AllAccountEvents?.Clear();
         Cache.SpeficAccountEvents.Remove(account.ID);
@@ -184,23 +191,23 @@ public static class AccountManager
             await connection.CloseAsync().ConfigureAwait(false);
         }
 
-        AccountEvent incomeEvent = AccountEvent.IncomeEvent(account, source, value, NetWorth); 
+        AccountEvent incomeEvent = AccountEvent.IncomeEvent(account, source, value, NetWorth, timeStamp); 
 
-        AddEventAsync(account, incomeEvent);
+        await AddEventAsync(account, incomeEvent);
         
         AccountChanged?.Invoke(null, EventArgs.Empty);
     }
 
-    public static async Task<Account> GetAccountAsync(int id)
+    public static async Task<Account?> GetAccountAsync(int id)
     {
         if (Cache.Accounts == null) await GetAccountsAsync();
 
-        Account? account = Cache.Accounts!.First(a => a.ID == id);        
+        Account? account = Cache.Accounts!.FirstOrDefault(a => a.ID == id);        
         
         return account;
     }
 
-    public static async void MakeTransferAsync(Account accountTo, Account accountFrom, double value)
+    public static async Task MakeTransferAsync(Account accountTo, Account accountFrom, double value, DateTime timeStamp)
     {
         Cache.Accounts = null;
         Cache.AllAccountEvents?.Clear();
@@ -239,17 +246,16 @@ public static class AccountManager
             await connection.CloseAsync().ConfigureAwait(false);
         }
 
-        (AccountEvent eventTo, AccountEvent eventFrom) transferEvents = AccountEvent.TransferAccountEvents(accountTo, accountFrom, value, NetWorth);
+        (AccountEvent eventTo, AccountEvent eventFrom) transferEvents = AccountEvent.TransferAccountEvents(accountTo, accountFrom, value, NetWorth, timeStamp);
 
+        await AddEventAsync(accountTo, transferEvents.eventTo);
 
-        AddEventAsync(accountTo, transferEvents.eventTo);
-
-        AddEventAsync(accountFrom, transferEvents.eventFrom);
+        await AddEventAsync(accountFrom, transferEvents.eventFrom);
 
         AccountChanged?.Invoke(null, EventArgs.Empty);
     }
 
-    public static async Task<List<AccountEvent>> GetAccountEventsAsync(int n)
+    public static async Task<List<AccountEvent>> GetAccountEventsWithLimitAsync(int n)
     {
         if (Cache.AllAccountEvents != null && Cache.AllAccountEvents.Count >= n) return Cache.AllAccountEvents.Take(n).ToList();
         
@@ -317,6 +323,7 @@ public static class AccountManager
 
                 }
             }
+
             await connection.CloseAsync().ConfigureAwait(false);
         }
 
@@ -325,6 +332,11 @@ public static class AccountManager
 
     public static async Task<List<string>> GetPayeesAsync(Account account)
     {
+        if (account.AccountType is not AccountType.None and not AccountType.Current)
+        {
+            throw new InvalidOperationException("Payees can only be found from Current accounts.");
+        }
+
         string query =
             """
                 SELECT DISTINCT description 
@@ -359,9 +371,50 @@ public static class AccountManager
 
         return payees;
     }
-
-    public static async void MakePaymentAsync(Account account, double amount, string payee)
+    public static async Task<List<string>> GetPayeesAsync(int id)
     {
+        string query =
+            """
+                SELECT DISTINCT description 
+                FROM account_events 
+                WHERE 
+                    account_id = @PrimaryAccountId
+                    AND 
+                    type = @Type;
+            """;
+
+        List<string> payees = [];
+
+        using (NpgsqlConnection connection = new NpgsqlConnection(DatabaseConfig.ConnectionString))
+        {
+            await connection.OpenAsync().ConfigureAwait(false);;
+            
+            using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@PrimaryAccountId", id);
+                command.Parameters.AddWithValue("@Type", (int) AccountEventType.Payment);
+
+                using NpgsqlDataReader reader = await command.ExecuteReaderAsync();
+                while (reader.Read())
+                {
+                    string payee = reader.GetString(0);
+                    payees.Add(payee);
+                }
+            }
+
+            await connection.CloseAsync().ConfigureAwait(false);
+        }
+
+        return payees;
+    }
+
+    public static async Task MakePaymentAsync(Account account, double amount, string payee, DateTime timeStamp)
+    {
+        if (account.AccountType is not AccountType.None and not AccountType.Current)
+        {
+            throw new InvalidOperationException("Payments can only be made from Current accounts.");
+        }
+
         Cache.Accounts = null;
         Cache.SpeficAccountEvents.Remove(account.ID);
 
@@ -390,13 +443,13 @@ public static class AccountManager
             await connection.CloseAsync().ConfigureAwait(false);
         }
 
-        AccountEvent paymentEvent = AccountEvent.PaymentEvent(account, payee, amount, NetWorth);
-        AddEventAsync(account, paymentEvent);
+        AccountEvent paymentEvent = AccountEvent.PaymentEvent(account, payee, amount, NetWorth, timeStamp);
+        await AddEventAsync(account, paymentEvent);
 
         AccountChanged?.Invoke(null, EventArgs.Empty);
     }
 
-    public static async void AddInterestAsync(Account account, double interestAmount)
+    public static async Task AddInterestAsync(Account account, double interestAmount, DateTime timeStamp)
     {
         Cache.Accounts = null;
         Cache.SpeficAccountEvents.Remove(account.ID);
@@ -425,14 +478,19 @@ public static class AccountManager
             await connection.CloseAsync().ConfigureAwait(false);
         }
 
-        AccountEvent interestEvent = AccountEvent.InterestEvent(account, interestAmount, NetWorth);
-        AddEventAsync(account, interestEvent);
+        AccountEvent interestEvent = AccountEvent.InterestEvent(account, interestAmount, NetWorth, timeStamp);
+        await AddEventAsync(account, interestEvent);
 
         AccountChanged?.Invoke(null, EventArgs.Empty);
     }
 
-    public static async void UpdateValueAsync(Account account, double value)
+    public static async Task UpdateValueAsync(Account account, double value)
     {
+        if (account.AccountType is not AccountType.Asset and not AccountType.Investment)
+        {
+            throw new InvalidOperationException("Only Assets and Investments can have their balance updated.");
+        }
+
         Cache.Accounts = null;
         Cache.SpeficAccountEvents.Remove(account.ID);
         
@@ -462,7 +520,7 @@ public static class AccountManager
         }
 
         AccountEvent updateEvent = AccountEvent.UpdateValueEvent(account, value, NetWorth);
-        AddEventAsync(account, updateEvent);
+        await AddEventAsync(account, updateEvent);
 
         AccountChanged?.Invoke(null, EventArgs.Empty);
     }
@@ -497,7 +555,6 @@ public static class AccountManager
                 {
                     int daysAgo = reader.GetInt32(0);
                     double oldBalance = Convert.ToDouble(reader.GetDecimal(1));
-
 
                     if (daysAgo < 7)
                     {
@@ -580,7 +637,6 @@ public static class AccountManager
                     int daysAgo = reader.GetInt32(0);
                     double oldBalance = Convert.ToDouble(reader.GetDecimal(1));
 
-
                     if (daysAgo < 7)
                     { 
                         weeklyStartBalance = oldBalance;
@@ -615,7 +671,6 @@ public static class AccountManager
             await connection.CloseAsync().ConfigureAwait(false);
         }
 
-
         double netWorth = NetWorth;
 
         timeChanges['w'] = weeklyStartBalance == -1 ? 0 : netWorth - startingAccountBalances - weeklyStartBalance;
@@ -626,7 +681,7 @@ public static class AccountManager
         return timeChanges;
     }
 
-    public static async Task<DateTime?> GetLastUpdateAsync(Account account)
+    public static async Task<DateTime?> GetLastUpdateAsync(int accountId)
     {
         string query =
             """
@@ -645,7 +700,7 @@ public static class AccountManager
 
             using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
             {
-                command.Parameters.AddWithValue("@PrimaryAccountId", account.ID);
+                command.Parameters.AddWithValue("@PrimaryAccountId", accountId);
                 
                 using NpgsqlDataReader reader = await command.ExecuteReaderAsync();
                 lastUpdate = reader.Read() ?  reader.GetDateTime(0) :  null;

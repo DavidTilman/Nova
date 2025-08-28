@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="Nova.Client.Controls.AccountsPanel"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Nova.Client.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Border Padding="16" CornerRadius="{ThemeResource OverlayCornerRadius}" Background="{StaticResource CardBackgoundBrush}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Style="{ThemeResource TitleTextBlockStyle}" 
+                       Text="Accounts" 
+                       Foreground="{StaticResource ForegroundBrush}"/>
+
+            <ScrollViewer Grid.Row="1">
+                <ListView x:Name="AccountPresenterListView" IsItemClickEnabled="False" SelectionMode="None">
+                </ListView>
+
+            </ScrollViewer>
+        </Grid>
+    </Border>
+</UserControl>

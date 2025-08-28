@@ -1,25 +1,29 @@
+using Microsoft.UI.Windowing;
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Navigation;
-
-using Nova.Client.Pages;
-using Nova.Database;
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
 using System.Runtime.InteropServices.WindowsRuntime;
 
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+
+using WinRT.Interop;
+using Windows.Storage;
+using Nova.APIs;
+using Nova.Client.Controls;
+using System.Diagnostics;
+using Nova.Client.Forms;
+using Microsoft.UI.Xaml.Media.Animation;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -30,48 +34,68 @@ namespace Nova.Client;
 /// </summary>
 public sealed partial class MainWindow : Window
 {
-    readonly Storyboard FadeOutStoryboard = new Storyboard();
-    readonly Storyboard FadeInStoryboard = new Storyboard();
-
     public MainWindow()
     {
         this.InitializeComponent();
-        LandingPage landingPage = new LandingPage();
-        MainWindowFrame.Content = landingPage;
-        landingPage.LoadingComplete += this.MainWindow_LoadingComplete;
 
-        FadeOutStoryboard.Children.Add(new DoubleAnimation
-        {
-            From = 1.0,
-            To = 0.0,
-            Duration = new Duration(TimeSpan.FromSeconds(1)),
-            AutoReverse = false,
-            FillBehavior = FillBehavior.HoldEnd,
-
-        });
+        Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Ngo9BigBOggjHTQxAR8/V1JEaF5cXmRCf1FpRmJGdld5fUVHYVZUTXxaS00DNHVRdkdmWXdfeHVcRWldUUF0WEZWYEk=");
         
-        Storyboard.SetTarget(FadeOutStoryboard, MainWindowFrame);
-        Storyboard.SetTargetProperty(FadeOutStoryboard, "Opacity");
+        nint hwnd = WindowNative.GetWindowHandle(this);
+        WindowId windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
+        AppWindow? appWindow = AppWindow.GetFromWindowId(windowId);
 
-        FadeInStoryboard.Children.Add(new DoubleAnimation
+        appWindow.MoveAndResize(new Windows.Graphics.RectInt32
         {
-            From = 0.0,
-            To = 1.0,
-            Duration = new Duration(TimeSpan.FromSeconds(0.5)),  
-            AutoReverse = false,
-            FillBehavior = FillBehavior.HoldEnd,
+            Width = 1850,
+            Height = 1000,
+            X = 10,
+            Y = 20
         });
 
-        Storyboard.SetTarget(FadeInStoryboard, MainWindowFrame);
-        Storyboard.SetTargetProperty(FadeInStoryboard, "Opacity");
-        FadeOutStoryboard.Completed += (s, e) =>
+        MainPage mainPage = new MainPage();
+        MainContentFrame.Content = mainPage;
+
+        MainWindowSidePanel.OpenPaymentForm += this.MainWindow_OpenPaymentForm;
+
+
+        this.DispatcherQueue.TryEnqueue(async () =>
         {
-            MainWindowFrame.Navigate(typeof(HomePage));
-            FadeInStoryboard.Begin();
-        };
+            List<KrakenPosition> krakenBalance = await Kraken.GetBalanceAsync();
+            if (krakenBalance != null)
+            {
+                mainPage.CryptoPositions = krakenBalance;
+                MainWindowSidePanel.CryptoPositions = krakenBalance;
+            }
+        });
+
+        this.DispatcherQueue.TryEnqueue(async () =>
+        {
+            List<Trading212Position> trading212Positions = await Trading212.GetPositionsAsync();
+            if (trading212Positions != null)
+            {
+                mainPage.InvestmentPositions = trading212Positions;
+                MainWindowSidePanel.InvestmentPositions = trading212Positions;
+            }
+        });
+
+        this.DispatcherQueue.TryEnqueue(async () =>
+        {
+            List<Account> accounts = await Database.AccountManager.GetAccountsAsync();
+            if (accounts != null)
+            {
+                MainWindowSidePanel.Accounts = accounts;
+                mainPage.Accounts = accounts;
+            }
+        });
     }
 
-    private void MainWindow_LoadingComplete(object? sender, EventArgs e) => this.FadeOutStoryboard.Begin();
+    private void MainWindow_OpenPaymentForm(object? sender, EventArgs e)
+    {
+        OverlayFrame.Navigate(typeof(PaymentFormPage), this, new SuppressNavigationTransitionInfo());
+    }
 
-    public Frame GetMainWindowFrame => MainWindowFrame;
+    public void CloseOverlay()
+    {
+        OverlayFrame.Content = null;
+    }
 }

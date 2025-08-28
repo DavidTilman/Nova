@@ -20,6 +20,7 @@ public enum AccountEventType
     Payment,
     Interest,
     UpdateValue,
+    None
 }
 public class AccountEvent
 {
@@ -31,11 +32,12 @@ public class AccountEvent
     public required double NewBalance { get; set; }
     public required double OldBalance { get; set; } = -1;
     public required double NetWorth { get; set; } = -1;
+    public string FormattedValue => this.Value.HasValue ? this.Value.Value.ToString("C") : "";
     public string FormattedNewBalance => this.NewBalance.ToString("C");
 
     public static async Task<AccountEvent> FromReader(NpgsqlDataReader reader) => new AccountEvent
     {
-        AccountName = (await AccountManager.GetAccountAsync(reader.GetInt32(1))).AccountName,
+        AccountName = (await AccountManager.GetAccountAsync(reader.GetInt32(1)))!.AccountName,
         EventType = (AccountEventType) reader.GetInt32(2),
         Value = reader.IsDBNull(3) ? null : Convert.ToDouble(reader.GetDecimal(3)),
         SecondaryAccountName = reader.IsDBNull(4) ? null : reader.GetString(4),
@@ -65,24 +67,24 @@ public class AccountEvent
         return command;
     }
 
-    public static AccountEvent IncomeEvent(Account account, string source, double value, double networth) => new AccountEvent
+    public static AccountEvent IncomeEvent(Account account, string source, double value, double networth, DateTime timeStamp) => new AccountEvent
     {
         EventType = AccountEventType.Income,
         Value = value,
         SecondaryAccountName = source,
-        TimeStamp = DateTime.UtcNow,
+        TimeStamp = timeStamp,
         NewBalance = account.Balance + value,
         OldBalance = account.Balance,
         NetWorth = networth
     };
 
-    public static (AccountEvent to, AccountEvent from) TransferAccountEvents(Account accountTo, Account accountFrom, double value, double networth) =>  (
+    public static (AccountEvent to, AccountEvent from) TransferAccountEvents(Account accountTo, Account accountFrom, double value, double networth, DateTime timeStamp) =>  (
         new AccountEvent
         {
             EventType = AccountEventType.Transfer,
             Value = value,
             SecondaryAccountName = accountFrom.AccountName,
-            TimeStamp = DateTime.UtcNow,
+            TimeStamp = timeStamp,
             NewBalance = accountTo.Balance + value,
             OldBalance = accountTo.Balance,
             NetWorth = networth
@@ -93,29 +95,29 @@ public class AccountEvent
             EventType = AccountEventType.Transfer,
             Value = -value,
             SecondaryAccountName = accountTo.AccountName,
-            TimeStamp = DateTime.UtcNow,
+            TimeStamp = timeStamp,
             NewBalance = accountFrom.Balance - value,
             OldBalance = accountFrom.Balance,
             NetWorth = networth
         }
     );
 
-    public static AccountEvent PaymentEvent(Account account, string source, double value, double networth) => new AccountEvent
+    public static AccountEvent PaymentEvent(Account account, string source, double value, double networth, DateTime timeStamp) => new AccountEvent
     {
         EventType = AccountEventType.Payment,
         Value = -value,
         SecondaryAccountName = source,
-        TimeStamp = DateTime.UtcNow,
+        TimeStamp = timeStamp,
         NewBalance = account.Balance - value,
         OldBalance = account.Balance,
         NetWorth = networth
     };
 
-    public static AccountEvent InterestEvent(Account account, double value, double networth) => new AccountEvent
+    public static AccountEvent InterestEvent(Account account, double value, double networth, DateTime timeStamp) => new AccountEvent
     {
         EventType = AccountEventType.Interest,
         Value = value,
-        TimeStamp = DateTime.UtcNow,
+        TimeStamp = timeStamp,
         NewBalance = account.Balance + value,
         OldBalance = account.Balance,
         NetWorth = networth
@@ -130,4 +132,11 @@ public class AccountEvent
         OldBalance = account.Balance,
         NetWorth = networth
     };
+
+    public override string ToString()
+    {
+        string valueText = this.Value.HasValue ? $"{this.Value.Value:C}" : "N/A";
+        string secondaryText = string.IsNullOrEmpty(this.SecondaryAccountName) ? "N/A" : this.SecondaryAccountName;
+        return $"{this.TimeStamp:yyyy-MM-dd HH:mm:ss} - {this.EventType} - {this.AccountName} - {secondaryText} - {valueText} - New Balance: {this.FormattedNewBalance} - Old Balance: {this.OldBalance:C} - Net Worth: {this.NetWorth:C}";
+    }
 }
