@@ -7,7 +7,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Background="{StaticResource BackgroundBrushTransparent}">
+    Background="{StaticResource BackgroundBrushTransparent}"
+    Loaded="Page_Loaded">
 
     <Border VerticalAlignment="Center" HorizontalAlignment="Center" Background="{StaticResource CardBackgoundBrush}" CornerRadius="{ThemeResource OverlayCornerRadius}" Padding="16" Width="auto">
         <Grid ColumnSpacing="8" RowSpacing="8">
@@ -24,7 +25,11 @@
             <TextBlock Text="Log Income" Grid.Column="0" Style="{ThemeResource SubtitleTextBlockStyle}" Foreground="{StaticResource ForegroundBrush}"/>
 
             <StackPanel Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Spacing="8">
-
+                <ComboBox x:Name="AccountsCombobox" PlaceholderText="Account" HorizontalAlignment="Stretch" SelectionChanged="AccountsCombobox_SelectionChanged"/>
+                <NumberBox x:Name="AmountNumberBox" PlaceholderText="Amount"/>
+                <AutoSuggestBox x:Name="SourceAutoSuggestBox" PlaceholderText="Source" HorizontalAlignment="Stretch" TextChanged="SourceAutoSuggestBox_TextChanged" SuggestionChosen="SourceAutoSuggestBox_SuggestionChosen"/>
+                <DatePicker x:Name="IncomeDatePicker" HorizontalAlignment="Stretch"/>
+                <Button Content="Log Income" HorizontalAlignment="Stretch" Click="LogIncomeButton_Click" Style="{ThemeResource AccentButtonStyle}" Background="{StaticResource AccentBrush}"/>
             </StackPanel>
 
         </Grid>

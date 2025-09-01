@@ -377,6 +377,7 @@ public static class AccountManager
 
         return payees;
     }
+
     public static async Task<List<string>> GetPayeesAsync(int id)
     {
         string query =
@@ -413,6 +414,86 @@ public static class AccountManager
         }
 
         return payees;
+    }
+
+    public static async Task<List<string>> GetIncomeSourcesAsync(Account account)
+    {
+        if (account.AccountType is not AccountType.None and not AccountType.Current)
+        {
+            throw new InvalidOperationException("Income Sources can only be found from Current accounts.");
+        }
+
+        string query =
+            """
+                SELECT DISTINCT description 
+                FROM account_events 
+                WHERE 
+                    account_id = @PrimaryAccountId
+                    AND 
+                    type = @Type;
+            """;
+
+        List<string> sources = [];
+
+        using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
+        {
+            await connection.OpenAsync().ConfigureAwait(false);
+
+            using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@PrimaryAccountId", account.ID);
+                command.Parameters.AddWithValue("@Type", (int) AccountEventType.Income);
+
+                using NpgsqlDataReader reader = await command.ExecuteReaderAsync();
+                while (reader.Read())
+                {
+                    string source = reader.GetString(0);
+                    sources.Add(source);
+                }
+            }
+
+            await connection.CloseAsync().ConfigureAwait(false);
+        }
+
+        return sources;
+    }
+
+    public static async Task<List<string>> GetIncomeSourcesAsync(int id)
+    {
+        string query =
+            """
+                SELECT DISTINCT description 
+                FROM account_events 
+                WHERE 
+                    account_id = @PrimaryAccountId
+                    AND 
+                    type = @Type;
+            """;
+
+        List<string> sources = [];
+
+        using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
+        {
+            await connection.OpenAsync().ConfigureAwait(false);
+            ;
+
+            using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@PrimaryAccountId", id);
+                command.Parameters.AddWithValue("@Type", (int) AccountEventType.Income);
+
+                using NpgsqlDataReader reader = await command.ExecuteReaderAsync();
+                while (reader.Read())
+                {
+                    string source = reader.GetString(0);
+                    sources.Add(source);
+                }
+            }
+
+            await connection.CloseAsync().ConfigureAwait(false);
+        }
+
+        return sources;
     }
 
     public static async Task MakePaymentAsync(Account account, double amount, string payee, DateTime timeStamp)
