@@ -20,9 +20,6 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace Nova.Client.Controls;
 public sealed partial class InvestmentPanel : UserControl
 {
@@ -41,5 +38,8 @@ public sealed partial class InvestmentPanel : UserControl
                 .ToList()
                 .ForEach((x) => InvestmentPresenterListView.Items.Add(new InvestmentPresenter(x)));
     }
-    public InvestmentPanel() => this.InitializeComponent();
+    public InvestmentPanel()
+    {
+        this.InitializeComponent();
+    }
 }

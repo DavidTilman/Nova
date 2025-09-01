@@ -27,8 +27,11 @@ public sealed partial class AccountsPanel : UserControl
         this.Loaded += this.AccountsPanel_Loaded;
     }
 
-    private async void AccountsPanel_Loaded(object sender, RoutedEventArgs e) => this.AccountPresenterListView.ItemsSource =
+    private async void AccountsPanel_Loaded(object sender, RoutedEventArgs e)
+    {
+        this.AccountPresenterListView.ItemsSource =
         (await AccountManager.GetAccountsAsync())
                 .Select(account => new AccountPresenter(account))
                 .ToList();
+    }
 }

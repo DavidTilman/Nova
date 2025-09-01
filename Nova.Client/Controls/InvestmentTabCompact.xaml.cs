@@ -14,9 +14,6 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Nova.APIs;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace Nova.Client.Controls;
 
 public sealed partial class InvestmentTabCompact : UserControl

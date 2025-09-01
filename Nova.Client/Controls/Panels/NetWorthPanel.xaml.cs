@@ -14,13 +14,13 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Nova.Database;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace Nova.Client.Controls;
 
 public sealed partial class NetWorthPanel : UserControl
 {
     public List<AccountEvent> AccountEvents = AccountManager.GetAllAccountEventsAsync().Result; //.Append(new AccountEvent() { EventType=AccountEventType.None, NetWorth=AccountManager.NetWorth, NewBalance=-1, OldBalance=-1, TimeStamp=DateTime.UtcNow}).ToList();
-    public NetWorthPanel() => this.InitializeComponent();
+    public NetWorthPanel()
+    {
+        this.InitializeComponent();
+    }
 }

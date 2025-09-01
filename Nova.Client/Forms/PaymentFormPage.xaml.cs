@@ -14,17 +14,12 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text.RegularExpressions;
 
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace Nova.Client.Forms;
-/// <summary>
-/// An empty page that can be used on its own or navigated to within a Frame.
-/// </summary>
 public sealed partial class PaymentFormPage : Page
 {
     List<string> payeeSuggestions = [];
@@ -45,6 +40,7 @@ public sealed partial class PaymentFormPage : Page
                 continue;
             AccountsCombobox.Items.Add($"[{account.ID}] {account.AccountName} ({account.AccountProvider})");
         }
+
         PaymentDatePicker.Date = DateTimeOffset.UtcNow;
     }
 
@@ -68,10 +64,9 @@ public sealed partial class PaymentFormPage : Page
         if (string.IsNullOrWhiteSpace(formattedAccountString))
             return null;
 
-        var match = System.Text.RegularExpressions.Regex.Match(formattedAccountString, @"\[(\d+)\]");
+        Match match = NumberContainedInSquareBrackets().Match(formattedAccountString);
         return match.Success ? int.Parse(match.Groups[1].Value) : null;
     }
-
 
     private async void AccountsCombobox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
@@ -90,14 +85,11 @@ public sealed partial class PaymentFormPage : Page
     {
         if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
         {
-            List<string> suitableItems = new List<string>();
+            List<string> suitableItems = [];
             string[] splitText = sender.Text.ToLower().Split(" ");
             foreach (string payee in payeeSuggestions)
             {
-                bool found = splitText.All((key) =>
-                {
-                    return payee.ToLower().Contains(key);
-                });
+                bool found = splitText.All((key) => payee.Contains(key, StringComparison.CurrentCultureIgnoreCase));
 
                 if (found)
                 {
@@ -108,7 +100,6 @@ public sealed partial class PaymentFormPage : Page
             sender.ItemsSource = suitableItems;
         }
     }
-
 
     private void PayeeAutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
     {
@@ -135,4 +126,7 @@ public sealed partial class PaymentFormPage : Page
 
         await AccountManager.MakePaymentAsync(account, amount, payee, timeStamp);
     }
+
+    [GeneratedRegex(@"\[(\d+)\]")]
+    private static partial Regex NumberContainedInSquareBrackets();
 }
