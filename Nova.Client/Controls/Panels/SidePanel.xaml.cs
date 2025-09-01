@@ -22,6 +22,10 @@ namespace Nova.Client.Controls;
 public sealed partial class SidePanel : UserControl
 {
     public event EventHandler? OpenPaymentForm;
+    public event EventHandler? OpenTransferForm;
+    public event EventHandler? OpenUpdateForm;
+    public event EventHandler? OpenIncomeForm;
+    public event EventHandler? OpenInterestForm;
     public List<Account> Accounts
     {
         set
@@ -108,5 +112,25 @@ public sealed partial class SidePanel : UserControl
     private void PaymentButton_Click(object sender, RoutedEventArgs e)
     {
         OpenPaymentForm?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void TransferButton_Click(object sender, RoutedEventArgs e)
+    {
+        OpenTransferForm?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void UpdateButton_Click(object sender, RoutedEventArgs e)
+    {
+        OpenUpdateForm?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void InterestButton_Click(object sender, RoutedEventArgs e)
+    {
+        OpenInterestForm?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void IncomeButton_Click(object sender, RoutedEventArgs e)
+    {
+        OpenIncomeForm?.Invoke(this, EventArgs.Empty);
     }
 }

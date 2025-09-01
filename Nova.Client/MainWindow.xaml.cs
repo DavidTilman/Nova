@@ -25,6 +25,7 @@ using System.Diagnostics;
 using Nova.Client.Forms;
 using Microsoft.UI.Xaml.Media.Animation;
 using System.Security.Principal;
+using System.Xml.Serialization;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -57,7 +58,10 @@ public sealed partial class MainWindow : Window
         MainContentFrame.Content = mainPage;
 
         MainWindowSidePanel.OpenPaymentForm += this.MainWindow_OpenPaymentForm;
-
+        MainWindowSidePanel.OpenTransferForm += this.MainWindow_OpenTransferForm;
+        MainWindowSidePanel.OpenUpdateForm += this.MainWindowSidePanel_OpenUpdateForm;
+        MainWindowSidePanel.OpenIncomeForm += this.MainWindowSidePanel_OpenIncomeForm;
+        MainWindowSidePanel.OpenInterestForm += this.MainWindowSidePanel_OpenInterestForm;
 
         this.DispatcherQueue.TryEnqueue(async () =>
         {
@@ -90,9 +94,34 @@ public sealed partial class MainWindow : Window
         });
     }
 
+    private void OpenOverlayPage(Type pageType)
+    {
+        OverlayFrame.Navigate(pageType, this, new SuppressNavigationTransitionInfo());
+    }
+
+    private void MainWindowSidePanel_OpenInterestForm(object? sender, EventArgs e)
+    {
+        this.OpenOverlayPage(typeof(InterestFormPage));
+    }
+
+    private void MainWindowSidePanel_OpenIncomeForm(object? sender, EventArgs e)
+    {
+        this.OpenOverlayPage(typeof(IncomeFormPage));
+    }
+
+    private void MainWindowSidePanel_OpenUpdateForm(object? sender, EventArgs e)
+    {
+        this.OpenOverlayPage(typeof(UpdateFormPage));
+    }
+
     private void MainWindow_OpenPaymentForm(object? sender, EventArgs e)
     {
-        OverlayFrame.Navigate(typeof(PaymentFormPage), this, new SuppressNavigationTransitionInfo());
+        this.OpenOverlayPage(typeof(PaymentFormPage));
+    }
+
+    private void MainWindow_OpenTransferForm(object? sender, EventArgs e)
+    {
+        this.OpenOverlayPage(typeof(TransferFormPage));
     }
 
     public void CloseOverlay()
