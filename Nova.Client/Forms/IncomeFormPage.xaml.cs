@@ -62,25 +62,13 @@ public sealed partial class IncomeFormPage : Page
         if (AccountsCombobox.SelectedItem is null)
             sourceSuggestions = [];
 
-        int? selectedAccountID = ExtractID((AccountsCombobox.SelectedItem as string)!);
+        int? selectedAccountID = FormHelper.ExtractID((AccountsCombobox.SelectedItem as string)!);
 
         if (selectedAccountID is null)
             return;
 
         sourceSuggestions = await AccountManager.GetIncomeSourcesAsync(selectedAccountID.Value);
     }
-
-    public static int? ExtractID(string formattedAccountString)
-    {
-        if (string.IsNullOrWhiteSpace(formattedAccountString))
-            return null;
-
-        Match match = NumberContainedInSquareBrackets().Match(formattedAccountString);
-        return match.Success ? int.Parse(match.Groups[1].Value) : null;
-    }
-
-    [GeneratedRegex(@"\[(\d+)\]")]
-    private static partial Regex NumberContainedInSquareBrackets();
 
     private void SourceAutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
     {
@@ -109,7 +97,7 @@ public sealed partial class IncomeFormPage : Page
 
     private async void LogIncomeButton_Click(object sender, RoutedEventArgs e)
     {
-        int? selectedAccountID = ExtractID((AccountsCombobox.SelectedItem as string)!);
+        int? selectedAccountID = FormHelper.ExtractID((AccountsCombobox.SelectedItem as string)!);
 
         if (selectedAccountID is null)
             return;

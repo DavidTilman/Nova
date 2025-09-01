@@ -31,7 +31,7 @@ using Nova.Database;
 namespace Nova.Client;
 public sealed partial class MainWindow : Window
 {
-    MainPage MainPage = new MainPage();
+    private readonly MainPage MainPage = new MainPage();
     public MainWindow()
     {
         this.InitializeComponent();
