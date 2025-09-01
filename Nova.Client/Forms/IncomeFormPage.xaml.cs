@@ -125,9 +125,9 @@ public sealed partial class IncomeFormPage : Page
         int dayOffset = (int) Math.Ceiling((IncomeDatePicker.Date - DateTimeOffset.UtcNow).TotalDays);
         DateTime timeStamp = DateTime.UtcNow.AddDays(dayOffset);
 
-        await AccountManager.AddIncomeAsync(account, amount, payee, timeStamp);
-
         MainWindow!.CloseOverlay();
+
+        await AccountManager.AddIncomeAsync(account, amount, payee, timeStamp);
     }
 }
 

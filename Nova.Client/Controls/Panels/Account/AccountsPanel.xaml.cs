@@ -21,17 +21,14 @@ using Windows.Foundation.Collections;
 namespace Nova.Client.Controls;
 public sealed partial class AccountsPanel : UserControl
 {
+    public List<Account> Accounts
+    {
+        set => this.AccountPresenterListView.ItemsSource = value
+                .Select(account => new AccountPresenter(account))
+                .ToList();
+    }
     public AccountsPanel()
     {
         this.InitializeComponent();
-        this.Loaded += this.AccountsPanel_Loaded;
-    }
-
-    private async void AccountsPanel_Loaded(object sender, RoutedEventArgs e)
-    {
-        this.AccountPresenterListView.ItemsSource =
-        (await AccountManager.GetAccountsAsync())
-                .Select(account => new AccountPresenter(account))
-                .ToList();
     }
 }

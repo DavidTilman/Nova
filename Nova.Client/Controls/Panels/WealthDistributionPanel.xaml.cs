@@ -55,6 +55,7 @@ public sealed partial class WealthDistributionPanel : UserControl
                 YBindingPath = "Balance",
                 ShowDataLabels = true
             };
+            TypeBalancePieChart.Series.Clear();
             TypeBalancePieChart.Series.Add(TypePieSeries);
         }
     }

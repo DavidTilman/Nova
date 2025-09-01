@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml.Navigation;
 
 using Nova.APIs;
 using Nova.Client.Controls;
+using Nova.Database;
 
 using System;
 using System.Collections.Generic;
@@ -33,7 +34,20 @@ public sealed partial class MainPage : Page
 
     public List<Account> Accounts
     {
-        set => this.WealthDistributionPanel.Accounts = value;
+        set
+        {
+            this.AccountsPanel.Accounts = value;
+            this.WealthDistributionPanel.Accounts = value;
+        }
+    }
+
+    public List<AccountEvent> AccountEvents
+    {
+        set
+        {
+            this.NetworthPanel.AccountEvents = value;
+            this.RecentActivityPanel.Events = value;
+        }
     }
 
     public MainPage()

@@ -30,6 +30,7 @@ public sealed partial class SidePanel : UserControl
     {
         set
         {
+            this.AccountsStackPanel.Children.Clear();
             foreach (Account account in value)
             {
                 AccountTabCompact tab = new AccountTabCompact(account);
@@ -42,6 +43,7 @@ public sealed partial class SidePanel : UserControl
     {
         set
         {
+            this.InvestmentStackPanel.Children.Clear();
             foreach (Trading212Position position in value)
             {
                 InvestmentTabCompact tab = new InvestmentTabCompact(position);
@@ -53,6 +55,7 @@ public sealed partial class SidePanel : UserControl
     {
         set
         {
+            this.CryptoStackPanel.Children.Clear();
             foreach (KrakenPosition position in value)
             {
                 CrytpoPresenter tab = new CrytpoPresenter(position);

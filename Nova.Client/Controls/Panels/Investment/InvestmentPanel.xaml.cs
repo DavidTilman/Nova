@@ -38,6 +38,11 @@ public sealed partial class InvestmentPanel : UserControl
                 .ToList()
                 .ForEach((x) => InvestmentPresenterListView.Items.Add(new InvestmentPresenter(x)));
     }
+
+    public void ClearPositions()
+    {
+        InvestmentPresenterListView.Items.Clear();
+    }
     public InvestmentPanel()
     {
         this.InitializeComponent();

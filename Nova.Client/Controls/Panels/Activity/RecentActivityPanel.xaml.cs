@@ -20,18 +20,19 @@ using Windows.Foundation.Collections;
 namespace Nova.Client.Controls;
 public sealed partial class RecentActivityPanel : UserControl
 {
+    public List<AccountEvent> Events
+    {
+        set
+        {
+            AccountEventPresenterListView.Items.Clear();
+            foreach (AccountEvent accountEvent in value)
+            {
+                AccountEventPresenterListView.Items.Add(new AccountEventPresenter(accountEvent));
+            }
+        }
+    }
     public RecentActivityPanel()
     {
         this.InitializeComponent();
-        this.Loaded += this.RecentActivityPanel_Loaded;
-    }
-
-    private async void RecentActivityPanel_Loaded(object sender, RoutedEventArgs e)
-    {
-        List<AccountEvent> events = await AccountManager.GetAllAccountEventsAsync();
-        foreach (AccountEvent accountEvent in events)
-        {
-            AccountEventPresenterListView.Items.Add(new AccountEventPresenter(accountEvent));
-        }
     }
 }

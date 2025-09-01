@@ -16,13 +16,13 @@ public enum AccountEventType
 public class AccountEvent
 {
     public string? AccountName { get; set; }
-    public required AccountEventType EventType { get; set; }
+    public AccountEventType EventType { get; set; }
     public double? Value { get; set; } = null;
     public string? SecondaryAccountName { get; set; } = null;
-    public required DateTime TimeStamp { get; set; }
-    public required double NewBalance { get; set; }
-    public required double OldBalance { get; set; } = -1;
-    public required double NetWorth { get; set; } = -1;
+    public DateTime TimeStamp { get; set; }
+    public double NewBalance { get; set; }
+    public double OldBalance { get; set; } = -1;
+    public double NetWorth { get; set; } = -1;
     public string FormattedValue => this.Value.HasValue ? this.Value.Value.ToString("C") : "";
     public string FormattedNewBalance => this.NewBalance.ToString("C");
 

@@ -26,10 +26,12 @@ using Nova.Client.Forms;
 using Microsoft.UI.Xaml.Media.Animation;
 using System.Security.Principal;
 using System.Xml.Serialization;
+using Nova.Database;
 
 namespace Nova.Client;
 public sealed partial class MainWindow : Window
 {
+    MainPage MainPage = new MainPage();
     public MainWindow()
     {
         this.InitializeComponent();
@@ -48,44 +50,49 @@ public sealed partial class MainWindow : Window
             Y = 20
         });
 
-        MainPage mainPage = new MainPage();
-        MainContentFrame.Content = mainPage;
-
         MainWindowSidePanel.OpenPaymentForm += this.MainWindow_OpenPaymentForm;
         MainWindowSidePanel.OpenTransferForm += this.MainWindow_OpenTransferForm;
         MainWindowSidePanel.OpenUpdateForm += this.MainWindowSidePanel_OpenUpdateForm;
         MainWindowSidePanel.OpenIncomeForm += this.MainWindowSidePanel_OpenIncomeForm;
         MainWindowSidePanel.OpenInterestForm += this.MainWindowSidePanel_OpenInterestForm;
 
-        this.DispatcherQueue.TryEnqueue(async () =>
-        {
-            List<KrakenPosition> krakenBalance = await Kraken.GetBalanceAsync();
-            if (krakenBalance != null)
-            {
-                mainPage.CryptoPositions = krakenBalance;
-                MainWindowSidePanel.CryptoPositions = krakenBalance;
-            }
-        });
+        AccountManager.AccountChanged += (object? sender, EventArgs e) => this.ResetContent();
 
-        this.DispatcherQueue.TryEnqueue(async () =>
-        {
-            List<Trading212Position> trading212Positions = await Trading212.GetPositionsAsync();
-            if (trading212Positions != null)
-            {
-                mainPage.InvestmentPositions = trading212Positions;
-                MainWindowSidePanel.InvestmentPositions = trading212Positions;
-            }
-        });
+        this.ResetContent();
+    }
 
-        this.DispatcherQueue.TryEnqueue(async () =>
+    private async void ResetContent()
+    {
+        this.MainPage.InvestmentPanel.ClearPositions();
+
+        List<KrakenPosition> krakenBalance = await Kraken.GetBalanceAsync();
+        if (krakenBalance != null)
         {
-            List<Account> accounts = await Database.AccountManager.GetAccountsAsync();
-            if (accounts != null)
-            {
-                MainWindowSidePanel.Accounts = accounts;
-                mainPage.Accounts = accounts;
-            }
-        });
+            this.MainPage.CryptoPositions = krakenBalance;
+            MainWindowSidePanel.CryptoPositions = krakenBalance;
+        }
+
+        List<Trading212Position> trading212Positions = await Trading212.GetPositionsAsync();
+        if (trading212Positions != null)
+        {
+            this.MainPage.InvestmentPositions = trading212Positions;
+            MainWindowSidePanel.InvestmentPositions = trading212Positions;
+        }
+
+        List<Account> accounts = await AccountManager.GetAccountsAsync();
+        if (accounts != null)
+        {
+            MainWindowSidePanel.Accounts = accounts;
+            this.MainPage.Accounts = accounts;
+        }
+
+        List<AccountEvent> accountEvents = await AccountManager.GetAllAccountEventsAsync();
+        if (accountEvents != null)
+        {
+            this.MainPage.AccountEvents = accountEvents;
+        }
+
+        MainContentFrame.Content = MainPage;
     }
 
     private void OpenOverlayPage(Type pageType)

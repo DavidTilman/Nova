@@ -124,9 +124,9 @@ public sealed partial class PaymentFormPage : Page
         int dayOffset = (int) Math.Ceiling((PaymentDatePicker.Date - DateTimeOffset.UtcNow).TotalDays);
         DateTime timeStamp = DateTime.UtcNow.AddDays(dayOffset);
 
+        MainWindow!.CloseOverlay();
         await AccountManager.MakePaymentAsync(account, amount, payee, timeStamp);
 
-        MainWindow!.CloseOverlay();
     }
 
     [GeneratedRegex(@"\[(\d+)\]")]

@@ -13,12 +13,27 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Nova.Database;
+using Syncfusion.UI.Xaml.Charts;
 
 namespace Nova.Client.Controls;
 
 public sealed partial class NetWorthPanel : UserControl
 {
-    public List<AccountEvent> AccountEvents = AccountManager.GetAllAccountEventsAsync().Result; //.Append(new AccountEvent() { EventType=AccountEventType.None, NetWorth=AccountManager.NetWorth, NewBalance=-1, OldBalance=-1, TimeStamp=DateTime.UtcNow}).ToList();
+    public List<AccountEvent> AccountEvents
+    {
+        set
+        {
+            LineSeries lineSeries = new LineSeries()
+            {
+                ItemsSource = value,
+                XBindingPath = "TimeStamp",
+                YBindingPath = "NetWorth"
+            };
+            NetWorthChart.Series.Clear();
+            NetWorthChart.Series.Add(lineSeries);
+            NetWorthLabel.Text = AccountManager.FormattedNetWorth;
+        }
+    }
     public NetWorthPanel()
     {
         this.InitializeComponent();
