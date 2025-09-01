@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application
+    x:Class="Nova.Client.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Nova.Client">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+                <!-- Other merged dictionaries here -->
+            </ResourceDictionary.MergedDictionaries>
+
+            <SolidColorBrush x:Key="BackgroundBrush" Color="#141414"/>
+            <SolidColorBrush x:Key="BackgroundBrushTransparent" Color="#80141414"/>
+            <SolidColorBrush x:Key="CardBackgoundBrush" Color="#1F1F1F"/>
+
+            <SolidColorBrush x:Key="ForegroundBrush" Color="#FCFCFC"/>
+            <SolidColorBrush x:Key="ForegroundDisabledBrush" Color="#C2C2C2"/>
+            <SolidColorBrush x:Key="AccentBrush" Color="#B370B0"/>
+
+            <SolidColorBrush x:Key="InfoBrush" Color="#20A4F3"/>
+            <SolidColorBrush x:Key="ErrorBrush" Color="#FA0F0F"/>
+            <SolidColorBrush x:Key="SuccessBrush" Color="#1BEEA8"/>
+            <SolidColorBrush x:Key="WarningBrush" Color="#FFAD05"/>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
