@@ -22,10 +22,15 @@ namespace Nova.Client.Controls;
 public sealed partial class SidePanel : UserControl
 {
     public event EventHandler? OpenPaymentForm;
+    public event EventHandler? OpenTransferForm;
+    public event EventHandler? OpenUpdateForm;
+    public event EventHandler? OpenIncomeForm;
+    public event EventHandler? OpenInterestForm;
     public List<Account> Accounts
     {
         set
         {
+            this.AccountsStackPanel.Children.Clear();
             foreach (Account account in value)
             {
                 AccountTabCompact tab = new AccountTabCompact(account);
@@ -38,6 +43,7 @@ public sealed partial class SidePanel : UserControl
     {
         set
         {
+            this.InvestmentStackPanel.Children.Clear();
             foreach (Trading212Position position in value)
             {
                 InvestmentTabCompact tab = new InvestmentTabCompact(position);
@@ -49,6 +55,7 @@ public sealed partial class SidePanel : UserControl
     {
         set
         {
+            this.CryptoStackPanel.Children.Clear();
             foreach (KrakenPosition position in value)
             {
                 CrytpoPresenter tab = new CrytpoPresenter(position);
@@ -108,5 +115,25 @@ public sealed partial class SidePanel : UserControl
     private void PaymentButton_Click(object sender, RoutedEventArgs e)
     {
         OpenPaymentForm?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void TransferButton_Click(object sender, RoutedEventArgs e)
+    {
+        OpenTransferForm?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void UpdateButton_Click(object sender, RoutedEventArgs e)
+    {
+        OpenUpdateForm?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void InterestButton_Click(object sender, RoutedEventArgs e)
+    {
+        OpenInterestForm?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void IncomeButton_Click(object sender, RoutedEventArgs e)
+    {
+        OpenIncomeForm?.Invoke(this, EventArgs.Empty);
     }
 }

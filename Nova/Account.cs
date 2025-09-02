@@ -23,18 +23,24 @@ public class Account
 
     public string FormattedPercentageOfNetWorth => $"{this.FractionOfNetWorth:P2}";
 
-    public static Account FromReader(Npgsql.NpgsqlDataReader reader) => new Account()
+    public static Account FromReader(Npgsql.NpgsqlDataReader reader)
     {
-        ID = reader.GetInt32(0),
-        AccountName = reader.GetString(1),
-        AccountProvider = reader.GetString(2),
-        AccountType = (AccountType) reader.GetInt32(3),
-        Balance = Convert.ToDouble(reader.GetDecimal(4)),
-        DateCreated = reader.GetDateTime(5),
-        Change = Convert.ToDouble(reader.GetDecimal(6))
-    };
+        return new Account()
+        {
+            ID = reader.GetInt32(0),
+            AccountName = reader.GetString(1),
+            AccountProvider = reader.GetString(2),
+            AccountType = (AccountType) reader.GetInt32(3),
+            Balance = Convert.ToDouble(reader.GetDecimal(4)),
+            DateCreated = reader.GetDateTime(5),
+            Change = Convert.ToDouble(reader.GetDecimal(6))
+        };
+    }
 
-    public override string ToString() => $"{this.AccountName} {this.AccountProvider} ({this.AccountType}): {this.FormattedBalance} [{this.DateCreated}]";
+    public override string ToString()
+    {
+        return $"{this.AccountName} {this.AccountProvider} ({this.AccountType}): {this.FormattedBalance} [{this.DateCreated}]";
+    }
 
     public Account()
     {

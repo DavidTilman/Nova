@@ -30,7 +30,11 @@
     <None Remove="Controls\Panels\SidePanel.xaml" />
     <None Remove="Controls\Panels\WealthDistributionPanel.xaml" />
     <None Remove="Controls\TimeChangeTab.xaml" />
+    <None Remove="Forms\IncomeFormPage.xaml" />
+    <None Remove="Forms\InterestFormPage.xaml" />
     <None Remove="Forms\PaymentFormPage.xaml" />
+    <None Remove="Forms\TransferFormPage.xaml" />
+    <None Remove="Forms\UpdateFormPage.xaml" />
     <None Remove="MainPage.xaml" />
   </ItemGroup>
 
@@ -64,6 +68,26 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Nova\Nova.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Forms\InterestFormPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Forms\IncomeFormPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Forms\UpdateFormPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Forms\TransferFormPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Controls\Panels\Investment\InvestmentPresenter.xaml">
@@ -156,5 +180,6 @@
     <PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">True</PublishReadyToRun>
     <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
     <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 </Project>

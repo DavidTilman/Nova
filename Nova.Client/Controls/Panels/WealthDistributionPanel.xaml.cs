@@ -20,9 +20,6 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace Nova.Client.Controls;
 
 public class TypeBalancePair
@@ -58,8 +55,12 @@ public sealed partial class WealthDistributionPanel : UserControl
                 YBindingPath = "Balance",
                 ShowDataLabels = true
             };
+            TypeBalancePieChart.Series.Clear();
             TypeBalancePieChart.Series.Add(TypePieSeries);
         }
     }
-    public WealthDistributionPanel() => this.InitializeComponent();
+    public WealthDistributionPanel()
+    {
+        this.InitializeComponent();
+    }
 }

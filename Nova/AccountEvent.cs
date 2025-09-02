@@ -16,13 +16,13 @@ public enum AccountEventType
 public class AccountEvent
 {
     public string? AccountName { get; set; }
-    public required AccountEventType EventType { get; set; }
+    public AccountEventType EventType { get; set; }
     public double? Value { get; set; } = null;
     public string? SecondaryAccountName { get; set; } = null;
-    public required DateTime TimeStamp { get; set; }
-    public required double NewBalance { get; set; }
-    public required double OldBalance { get; set; } = -1;
-    public required double NetWorth { get; set; } = -1;
+    public DateTime TimeStamp { get; set; }
+    public double NewBalance { get; set; }
+    public double OldBalance { get; set; } = -1;
+    public double NetWorth { get; set; } = -1;
     public string FormattedValue => this.Value.HasValue ? this.Value.Value.ToString("C") : "";
     public string FormattedNewBalance => this.NewBalance.ToString("C");
 
@@ -129,13 +129,13 @@ public class AccountEvent
         };
     }
 
-    public static AccountEvent UpdateValueEvent(Account account, double newValue, double networth)
+    public static AccountEvent UpdateValueEvent(Account account, double newValue, double networth, DateTime timeStamp)
     {
         return new AccountEvent
         {
             EventType = AccountEventType.UpdateValue,
             Value = newValue,
-            TimeStamp = DateTime.UtcNow,
+            TimeStamp = timeStamp,
             NewBalance = newValue,
             OldBalance = account.Balance,
             NetWorth = networth

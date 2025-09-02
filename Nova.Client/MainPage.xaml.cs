@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml.Navigation;
 
 using Nova.APIs;
 using Nova.Client.Controls;
+using Nova.Database;
 
 using System;
 using System.Collections.Generic;
@@ -18,36 +19,34 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace Nova.Client;
-/// <summary>
-/// An empty page that can be used on its own or navigated to within a Frame.
-/// </summary>
 public sealed partial class MainPage : Page
 {
     public List<KrakenPosition> CryptoPositions
     {
-        set
-        {
-            InvestmentPanel.CryptoPositions = value;
-        }
+        set => this.InvestmentPanel.CryptoPositions = value;
     }
 
     public List<Trading212Position> InvestmentPositions
     {
-        set
-        {
-            InvestmentPanel.InvestmentPositions = value;
-        }
+        set => this.InvestmentPanel.InvestmentPositions = value;
     }
 
     public List<Account> Accounts
     {
         set
         {
-            WealthDistributionPanel.Accounts = value;
+            this.AccountsPanel.Accounts = value;
+            this.WealthDistributionPanel.Accounts = value;
+        }
+    }
+
+    public List<AccountEvent> AccountEvents
+    {
+        set
+        {
+            this.NetworthPanel.AccountEvents = value;
+            this.RecentActivityPanel.Events = value;
         }
     }
 

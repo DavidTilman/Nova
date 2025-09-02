@@ -21,12 +21,12 @@
             <RowDefinition Height="1*" />
         </Grid.RowDefinitions>
 
-        <controls:NetWorthPanel Grid.Column="0" Grid.ColumnSpan="2"/>
+        <controls:NetWorthPanel x:Name="NetworthPanel" Grid.Column="0" Grid.ColumnSpan="2"/>
         <controls:WealthDistributionPanel x:Name="WealthDistributionPanel" Grid.Column="3"/>
 
-        <controls:AccountsPanel Grid.Row="1" Grid.Column="0"/>
+        <controls:AccountsPanel x:Name="AccountsPanel" Grid.Row="1" Grid.Column="0"/>
 
-        <controls:InvestmentPanel x:Name="InvestmentPanel" Grid.Row="1" Grid.Column="1"/>
-        <controls:RecentActivityPanel Grid.Row="1" Grid.Column="2"/>
+        <controls:InvestmentPanel x:Name="InvestmentPanel" x:FieldModifier="public" Grid.Row="1" Grid.Column="1"/>
+        <controls:RecentActivityPanel x:Name="RecentActivityPanel" Grid.Row="1" Grid.Column="2"/>
     </Grid>
 </Page>

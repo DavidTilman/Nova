@@ -25,16 +25,13 @@ using System.Diagnostics;
 using Nova.Client.Forms;
 using Microsoft.UI.Xaml.Media.Animation;
 using System.Security.Principal;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+using System.Xml.Serialization;
+using Nova.Database;
 
 namespace Nova.Client;
-/// <summary>
-/// An empty window that can be used on its own or navigated to within a Frame.
-/// </summary>
 public sealed partial class MainWindow : Window
 {
+    private readonly MainPage MainPage = new MainPage();
     public MainWindow()
     {
         this.InitializeComponent();
@@ -53,46 +50,79 @@ public sealed partial class MainWindow : Window
             Y = 20
         });
 
-        MainPage mainPage = new MainPage();
-        MainContentFrame.Content = mainPage;
-
         MainWindowSidePanel.OpenPaymentForm += this.MainWindow_OpenPaymentForm;
+        MainWindowSidePanel.OpenTransferForm += this.MainWindow_OpenTransferForm;
+        MainWindowSidePanel.OpenUpdateForm += this.MainWindowSidePanel_OpenUpdateForm;
+        MainWindowSidePanel.OpenIncomeForm += this.MainWindowSidePanel_OpenIncomeForm;
+        MainWindowSidePanel.OpenInterestForm += this.MainWindowSidePanel_OpenInterestForm;
 
+        AccountManager.AccountChanged += (object? sender, EventArgs e) => this.ResetContent();
 
-        this.DispatcherQueue.TryEnqueue(async () =>
+        this.ResetContent();
+    }
+
+    private async void ResetContent()
+    {
+        this.MainPage.InvestmentPanel.ClearPositions();
+
+        List<KrakenPosition> krakenBalance = await Kraken.GetBalanceAsync();
+        if (krakenBalance != null)
         {
-            List<KrakenPosition> krakenBalance = await Kraken.GetBalanceAsync();
-            if (krakenBalance != null)
-            {
-                mainPage.CryptoPositions = krakenBalance;
-                MainWindowSidePanel.CryptoPositions = krakenBalance;
-            }
-        });
+            this.MainPage.CryptoPositions = krakenBalance;
+            MainWindowSidePanel.CryptoPositions = krakenBalance;
+        }
 
-        this.DispatcherQueue.TryEnqueue(async () =>
+        List<Trading212Position> trading212Positions = await Trading212.GetPositionsAsync();
+        if (trading212Positions != null)
         {
-            List<Trading212Position> trading212Positions = await Trading212.GetPositionsAsync();
-            if (trading212Positions != null)
-            {
-                mainPage.InvestmentPositions = trading212Positions;
-                MainWindowSidePanel.InvestmentPositions = trading212Positions;
-            }
-        });
+            this.MainPage.InvestmentPositions = trading212Positions;
+            MainWindowSidePanel.InvestmentPositions = trading212Positions;
+        }
 
-        this.DispatcherQueue.TryEnqueue(async () =>
+        List<Account> accounts = await AccountManager.GetAccountsAsync();
+        if (accounts != null)
         {
-            List<Account> accounts = await Database.AccountManager.GetAccountsAsync();
-            if (accounts != null)
-            {
-                MainWindowSidePanel.Accounts = accounts;
-                mainPage.Accounts = accounts;
-            }
-        });
+            MainWindowSidePanel.Accounts = accounts;
+            this.MainPage.Accounts = accounts;
+        }
+
+        List<AccountEvent> accountEvents = await AccountManager.GetAllAccountEventsAsync();
+        if (accountEvents != null)
+        {
+            this.MainPage.AccountEvents = accountEvents;
+        }
+
+        MainContentFrame.Content = MainPage;
+    }
+
+    private void OpenOverlayPage(Type pageType)
+    {
+        OverlayFrame.Navigate(pageType, this, new SuppressNavigationTransitionInfo());
+    }
+
+    private void MainWindowSidePanel_OpenInterestForm(object? sender, EventArgs e)
+    {
+        this.OpenOverlayPage(typeof(InterestFormPage));
+    }
+
+    private void MainWindowSidePanel_OpenIncomeForm(object? sender, EventArgs e)
+    {
+        this.OpenOverlayPage(typeof(IncomeFormPage));
+    }
+
+    private void MainWindowSidePanel_OpenUpdateForm(object? sender, EventArgs e)
+    {
+        this.OpenOverlayPage(typeof(UpdateFormPage));
     }
 
     private void MainWindow_OpenPaymentForm(object? sender, EventArgs e)
     {
-        OverlayFrame.Navigate(typeof(PaymentFormPage), this, new SuppressNavigationTransitionInfo());
+        this.OpenOverlayPage(typeof(PaymentFormPage));
+    }
+
+    private void MainWindow_OpenTransferForm(object? sender, EventArgs e)
+    {
+        this.OpenOverlayPage(typeof(TransferFormPage));
     }
 
     public void CloseOverlay()

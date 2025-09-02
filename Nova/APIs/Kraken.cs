@@ -12,8 +12,7 @@ public class Kraken
     {
         // Step 1: SHA256(nonce + postData)
         byte[] npBytes = Encoding.UTF8.GetBytes(nonce + postData);
-        using SHA256 sha256 = SHA256.Create();
-        byte[] hash256 = sha256.ComputeHash(npBytes);
+        byte[] hash256 = SHA256.HashData(npBytes);
 
         // Step 2: Concatenate urlPath + hash256
         byte[] pathBytes = Encoding.UTF8.GetBytes(urlPath);

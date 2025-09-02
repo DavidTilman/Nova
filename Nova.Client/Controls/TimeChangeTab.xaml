@@ -10,13 +10,13 @@
 
     <Border CornerRadius="{ThemeResource ControlCornerRadius}">
         <Grid ColumnSpacing="2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
             <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Foreground="{StaticResource ForegroundBrush}" Text="{x:Bind Indicator}"/>
-            <TextBlock x:Name="ChangeTextBlock" Grid.Column="1" Style="{ThemeResource BodyStrongTextBlockStyle}" Foreground="{StaticResource ForegroundBrush}" Text="{x:Bind Change}"/>
+            <TextBlock x:Name="ChangeTextBlock" Grid.Row="1" Style="{ThemeResource BodyStrongTextBlockStyle}" Foreground="{StaticResource ForegroundBrush}" Text="{x:Bind Change}"/>
         </Grid>
     </Border>
 </UserControl>

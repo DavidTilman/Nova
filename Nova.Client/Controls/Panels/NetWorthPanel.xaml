@@ -18,12 +18,9 @@
             </Grid.RowDefinitions>
             <TextBlock Style="{ThemeResource TitleTextBlockStyle}" Foreground="{StaticResource ForegroundBrush}">
                 <Run Text="Net Worth:"/>
-                <Run Text="{x:Bind nova:AccountManager.FormattedNetWorth}"/>
+                <Run x:Name="NetWorthLabel"/>
             </TextBlock>
-            <chart:SfCartesianChart Grid.Row="1" Margin="0,8,0,0">
-                <chart:SfCartesianChart.Series>
-                    <chart:LineSeries ItemsSource="{x:Bind AccountEvents}" XBindingPath="TimeStamp" YBindingPath="NetWorth"/>
-                </chart:SfCartesianChart.Series>
+            <chart:SfCartesianChart Grid.Row="1" Margin="0,8,0,0" x:Name="NetWorthChart">
                 <chart:SfCartesianChart.XAxes>
                     <chart:DateTimeAxis/>
                 </chart:SfCartesianChart.XAxes>

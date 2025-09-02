@@ -17,24 +17,22 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace Nova.Client.Controls;
 public sealed partial class RecentActivityPanel : UserControl
 {
+    public List<AccountEvent> Events
+    {
+        set
+        {
+            AccountEventPresenterListView.Items.Clear();
+            foreach (AccountEvent accountEvent in value)
+            {
+                AccountEventPresenterListView.Items.Add(new AccountEventPresenter(accountEvent));
+            }
+        }
+    }
     public RecentActivityPanel()
     {
         this.InitializeComponent();
-        this.Loaded += this.RecentActivityPanel_Loaded;
-    }
-
-    private async void RecentActivityPanel_Loaded(object sender, RoutedEventArgs e)
-    {
-        List<AccountEvent> events = await AccountManager.GetAllAccountEventsAsync();
-        foreach (AccountEvent accountEvent in events)
-        {
-            AccountEventPresenterListView.Items.Add(new AccountEventPresenter(accountEvent));
-        }
     }
 }

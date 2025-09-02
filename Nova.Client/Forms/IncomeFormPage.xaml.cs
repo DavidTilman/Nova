@@ -10,7 +10,6 @@ using Nova.Database;
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -20,28 +19,15 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 
 namespace Nova.Client.Forms;
-public sealed partial class PaymentFormPage : Page
+public sealed partial class IncomeFormPage : Page
 {
-    List<string> payeeSuggestions = [];
-
     MainWindow? MainWindow;
-    public PaymentFormPage()
+
+    List<string> sourceSuggestions = [];
+
+    public IncomeFormPage()
     {
         this.InitializeComponent();
-
-        this.Loaded += this.PaymentFormPage_Loaded;
-    }
-
-    private async void PaymentFormPage_Loaded(object sender, RoutedEventArgs e)
-    {
-        foreach (Account account in await AccountManager.GetAccountsAsync())
-        {
-            if (account.AccountType is not AccountType.Current)
-                continue;
-            AccountsCombobox.Items.Add($"[{account.ID}] {account.AccountName} ({account.AccountProvider})");
-        }
-
-        PaymentDatePicker.Date = DateTimeOffset.UtcNow;
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -59,32 +45,44 @@ public sealed partial class PaymentFormPage : Page
         MainWindow!.CloseOverlay();
     }
 
+    private async void Page_Loaded(object sender, RoutedEventArgs e)
+    {
+        foreach (Account account in await AccountManager.GetAccountsAsync())
+        {
+            if (account.AccountType is not AccountType.Current)
+                continue;
+            AccountsCombobox.Items.Add($"[{account.ID}] {account.AccountName} ({account.AccountProvider})");
+        }
+
+        IncomeDatePicker.Date = DateTimeOffset.UtcNow;
+    }
+
     private async void AccountsCombobox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (AccountsCombobox.SelectedItem is null)
-            payeeSuggestions = [];
+            sourceSuggestions = [];
 
         int? selectedAccountID = FormHelper.ExtractID((AccountsCombobox.SelectedItem as string)!);
 
         if (selectedAccountID is null)
             return;
 
-        payeeSuggestions = await AccountManager.GetPayeesAsync(selectedAccountID.Value);
+        sourceSuggestions = await AccountManager.GetIncomeSourcesAsync(selectedAccountID.Value);
     }
 
-    private void PayeeAutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+    private void SourceAutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
     {
         if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
         {
             List<string> suitableItems = [];
             string[] splitText = sender.Text.ToLower().Split(" ");
-            foreach (string payee in payeeSuggestions)
+            foreach (string source in sourceSuggestions)
             {
-                bool found = splitText.All((key) => payee.Contains(key, StringComparison.CurrentCultureIgnoreCase));
+                bool found = splitText.All((key) => source.Contains(key, StringComparison.CurrentCultureIgnoreCase));
 
                 if (found)
                 {
-                    suitableItems.Add(payee);
+                    suitableItems.Add(source);
                 }
             }
 
@@ -92,12 +90,12 @@ public sealed partial class PaymentFormPage : Page
         }
     }
 
-    private void PayeeAutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+    private void SourceAutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
     {
-        PayeeAutoSuggestBox.Text = args.SelectedItem.ToString();
+        SourceAutoSuggestBox.Text = args.SelectedItem.ToString();
     }
 
-    private async void SubmitPaymentButton_Click(object sender, RoutedEventArgs e)
+    private async void LogIncomeButton_Click(object sender, RoutedEventArgs e)
     {
         int? selectedAccountID = FormHelper.ExtractID((AccountsCombobox.SelectedItem as string)!);
 
@@ -108,18 +106,19 @@ public sealed partial class PaymentFormPage : Page
         if (account is null)
             return;
 
-        if (!double.TryParse(AmountNumberBox.Text, out double amount))
+        if(!double.TryParse(AmountNumberBox.Text, out double amount))
         {
             return;
         }
 
-        string payee = PayeeAutoSuggestBox.Text;
+        string payee = SourceAutoSuggestBox.Text;
 
-        int dayOffset = (int) Math.Ceiling((PaymentDatePicker.Date - DateTimeOffset.UtcNow).TotalDays);
+        int dayOffset = (int) Math.Ceiling((IncomeDatePicker.Date - DateTimeOffset.UtcNow).TotalDays);
         DateTime timeStamp = DateTime.UtcNow.AddDays(dayOffset);
 
         MainWindow!.CloseOverlay();
-        await AccountManager.MakePaymentAsync(account, amount, payee, timeStamp);
 
+        await AccountManager.AddIncomeAsync(account, amount, payee, timeStamp);
     }
 }
+

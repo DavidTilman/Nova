@@ -137,21 +137,21 @@ internal class Program
         }
     }
 
-    private static async Task UpdateCommand(string[] strings)
+    private static async Task UpdateCommand(string[] args)
     {
-        if (strings.Length != 2)
+        if (args.Length is not 2 and not 3)
         {
-            Console.WriteLine("Usage: update <accountId> <newBalance>");
+            Console.WriteLine("Usage: update <accountId> <newBalance> <opt | daysPrevious | 0>");
             return;
         }
 
-        if (!int.TryParse(strings[0], out int accountId))
+        if (!int.TryParse(args[0], out int accountId))
         {
             Console.WriteLine("Invalid account ID. Please enter a valid number.");
             return;
         }
 
-        if (!double.TryParse(strings[1], out double newBalance))
+        if (!double.TryParse(args[1], out double newBalance))
         {
             Console.WriteLine("Invalid new balance. Please enter a valid number.");
             return;
@@ -164,7 +164,17 @@ internal class Program
             return;
         }
 
+        int dateOffset = 0;
+        if (args.Length == 3 && !int.TryParse(args[2], out dateOffset))
+        {
+            Console.WriteLine("Invalid date offset. Please enter a valid number.");
+            return;
+        }
+
         double.Round(newBalance, 2);
+
+        DateTime timeStamp = DateTime.UtcNow.AddDays(-dateOffset);
+
         Console.WriteLine($"Update account: {account.AccountName} to new balance: {newBalance:C}.\nConfirm? Y/[N]");
         string? confirm = Console.ReadLine()?.Trim().ToLower();
         if (confirm is not "y" and not "yes")
@@ -173,7 +183,7 @@ internal class Program
             return;
         }
 
-        await AccountManager.UpdateValueAsync(account, newBalance).ContinueWith(task =>
+        await AccountManager.UpdateValueAsync(account, newBalance, timeStamp).ContinueWith(task =>
         {
             if (task.IsCompletedSuccessfully)
             {
