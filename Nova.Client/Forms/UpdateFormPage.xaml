@@ -24,7 +24,10 @@
             <TextBlock Text="Update Balance" Grid.Column="0" Style="{ThemeResource SubtitleTextBlockStyle}" Foreground="{StaticResource ForegroundBrush}"/>
 
             <StackPanel Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Spacing="8">
-
+                <ComboBox x:Name="AccountsCombobox" PlaceholderText="Account" HorizontalAlignment="Stretch"/>
+                <NumberBox x:Name="AmountNumberBox" PlaceholderText="Amount"/>
+                <DatePicker x:Name="UpdateDatePicker" HorizontalAlignment="Stretch"/>
+                <Button Content="Submit Update" HorizontalAlignment="Stretch" Click="SubmitUpdateButton_Click" Style="{ThemeResource AccentButtonStyle}" Background="{StaticResource AccentBrush}"/>
             </StackPanel>
 
         </Grid>

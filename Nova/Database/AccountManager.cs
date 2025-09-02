@@ -574,7 +574,7 @@ public static class AccountManager
         AccountChanged?.Invoke(null, EventArgs.Empty);
     }
 
-    public static async Task UpdateValueAsync(Account account, double value)
+    public static async Task UpdateValueAsync(Account account, double value, DateTime timeStamp)
     {
         if (account.AccountType is not AccountType.Asset and not AccountType.Investment)
         {
@@ -610,7 +610,7 @@ public static class AccountManager
             await connection.CloseAsync().ConfigureAwait(false);
         }
 
-        AccountEvent updateEvent = AccountEvent.UpdateValueEvent(account, value, NetWorth);
+        AccountEvent updateEvent = AccountEvent.UpdateValueEvent(account, value, NetWorth, timeStamp);
         await AddEventAsync(account, updateEvent);
 
         AccountChanged?.Invoke(null, EventArgs.Empty);

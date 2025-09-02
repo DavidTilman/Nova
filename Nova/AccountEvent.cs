@@ -129,13 +129,13 @@ public class AccountEvent
         };
     }
 
-    public static AccountEvent UpdateValueEvent(Account account, double newValue, double networth)
+    public static AccountEvent UpdateValueEvent(Account account, double newValue, double networth, DateTime timeStamp)
     {
         return new AccountEvent
         {
             EventType = AccountEventType.UpdateValue,
             Value = newValue,
-            TimeStamp = DateTime.UtcNow,
+            TimeStamp = timeStamp,
             NewBalance = newValue,
             OldBalance = account.Balance,
             NetWorth = networth
