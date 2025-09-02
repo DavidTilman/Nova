@@ -24,9 +24,12 @@
             <TextBlock Text="Transfer Funds" Grid.Column="0" Style="{ThemeResource SubtitleTextBlockStyle}" Foreground="{StaticResource ForegroundBrush}"/>
 
             <StackPanel Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Spacing="8">
-                
+                <ComboBox x:Name="FromAccountCombobox" PlaceholderText="Account" HorizontalAlignment="Stretch" SelectionChanged="FromAccountCombobox_SelectionChanged"/>
+                <ComboBox x:Name="ToAccountCombobox" IsEnabled="False" PlaceholderText="Account" HorizontalAlignment="Stretch" SelectionChanged="ToAccountCombobox_SelectionChanged"/>
+                <NumberBox x:Name="AmountNumberBox" PlaceholderText="Amount"/>
+                <DatePicker x:Name="TransferDatePicker" HorizontalAlignment="Stretch"/>
+                <Button Content="Submit Transfer" HorizontalAlignment="Stretch" Click="SubmitTransferButton_Click" Style="{ThemeResource AccentButtonStyle}" Background="{StaticResource AccentBrush}"/>
             </StackPanel>
-
         </Grid>
     </Border>
 </Page>

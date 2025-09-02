@@ -59,21 +59,12 @@ public sealed partial class PaymentFormPage : Page
         MainWindow!.CloseOverlay();
     }
 
-    public static int? ExtractID(string formattedAccountString)
-    {
-        if (string.IsNullOrWhiteSpace(formattedAccountString))
-            return null;
-
-        Match match = NumberContainedInSquareBrackets().Match(formattedAccountString);
-        return match.Success ? int.Parse(match.Groups[1].Value) : null;
-    }
-
     private async void AccountsCombobox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (AccountsCombobox.SelectedItem is null)
             payeeSuggestions = [];
 
-        int? selectedAccountID = ExtractID((AccountsCombobox.SelectedItem as string)!);
+        int? selectedAccountID = FormHelper.ExtractID((AccountsCombobox.SelectedItem as string)!);
 
         if (selectedAccountID is null)
             return;
@@ -108,7 +99,7 @@ public sealed partial class PaymentFormPage : Page
 
     private async void SubmitPaymentButton_Click(object sender, RoutedEventArgs e)
     {
-        int? selectedAccountID = ExtractID((AccountsCombobox.SelectedItem as string)!);
+        int? selectedAccountID = FormHelper.ExtractID((AccountsCombobox.SelectedItem as string)!);
 
         if (selectedAccountID is null)
             return;
@@ -128,7 +119,4 @@ public sealed partial class PaymentFormPage : Page
         await AccountManager.MakePaymentAsync(account, amount, payee, timeStamp);
 
     }
-
-    [GeneratedRegex(@"\[(\d+)\]")]
-    private static partial Regex NumberContainedInSquareBrackets();
 }
