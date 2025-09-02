@@ -97,7 +97,10 @@ public sealed partial class TransferFormPage : Page
         if (fromAccount is null)
             return;
 
-        double amount = double.Parse(AmountNumberBox.Text);
+        if (!double.TryParse(AmountNumberBox.Text, out double amount))
+        {
+            return;
+        }
 
         int dayOffset = (int) Math.Ceiling((TransferDatePicker.Date - DateTimeOffset.UtcNow).TotalDays);
         DateTime timeStamp = DateTime.UtcNow.AddDays(dayOffset);

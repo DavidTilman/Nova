@@ -106,7 +106,10 @@ public sealed partial class IncomeFormPage : Page
         if (account is null)
             return;
 
-        double amount = double.Parse(AmountNumberBox.Text);
+        if(!double.TryParse(AmountNumberBox.Text, out double amount))
+        {
+            return;
+        }
 
         string payee = SourceAutoSuggestBox.Text;
 

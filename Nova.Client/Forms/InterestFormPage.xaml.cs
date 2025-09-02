@@ -52,7 +52,10 @@ public sealed partial class InterestFormPage : Page
         if (account is null)
             return;
 
-        double amount = double.Parse(AmountNumberBox.Text);
+        if (!double.TryParse(AmountNumberBox.Text, out double amount))
+        {
+            return;
+        }
 
         int dayOffset = (int) Math.Ceiling((InterestDatePicker.Date - DateTimeOffset.UtcNow).TotalDays);
         DateTime timeStamp = DateTime.UtcNow.AddDays(dayOffset);

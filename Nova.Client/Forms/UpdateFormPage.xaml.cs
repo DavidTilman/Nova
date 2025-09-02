@@ -66,7 +66,10 @@ public sealed partial class UpdateFormPage : Page
         if (account is null)
             return;
 
-        double amount = double.Parse(AmountNumberBox.Text);
+        if (!double.TryParse(AmountNumberBox.Text, out double amount))
+        {
+            return;
+        }
 
         int dayOffset = (int) Math.Ceiling((UpdateDatePicker.Date - DateTimeOffset.UtcNow).TotalDays);
         DateTime timeStamp = DateTime.UtcNow.AddDays(dayOffset);

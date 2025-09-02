@@ -108,7 +108,10 @@ public sealed partial class PaymentFormPage : Page
         if (account is null)
             return;
 
-        double amount = double.Parse(AmountNumberBox.Text);
+        if (!double.TryParse(AmountNumberBox.Text, out double amount))
+        {
+            return;
+        }
 
         string payee = PayeeAutoSuggestBox.Text;
 
