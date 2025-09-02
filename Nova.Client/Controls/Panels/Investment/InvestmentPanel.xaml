@@ -20,7 +20,10 @@
                    Foreground="{StaticResource ForegroundBrush}"/>
 
             <ScrollViewer Grid.Row="1">
-                <ListView x:Name="InvestmentPresenterListView" IsItemClickEnabled="False" SelectionMode="None"/>
+                <StackPanel>
+                    <ListView x:Name="InvestmentPresenterListView" IsItemClickEnabled="False" SelectionMode="None"/>
+                    <ListView x:Name="CryptoPresenterListView" IsItemClickEnabled="False" SelectionMode="None"/>
+                </StackPanel>
             </ScrollViewer>
         </Grid>
     </Border>

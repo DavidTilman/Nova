@@ -26,6 +26,7 @@ public sealed partial class SidePanel : UserControl
     public event EventHandler? OpenUpdateForm;
     public event EventHandler? OpenIncomeForm;
     public event EventHandler? OpenInterestForm;
+    public event EventHandler? OpenCreateForm;
     public List<Account> Accounts
     {
         set
@@ -66,11 +67,10 @@ public sealed partial class SidePanel : UserControl
     public SidePanel()
     {
         this.InitializeComponent();
-
-        this.Loaded += this.SidePanel_Loaded;
+        this.LoadDMQYChangesPanel();
     }
 
-    private async void SidePanel_Loaded(object sender, RoutedEventArgs e)
+    public async void LoadDMQYChangesPanel()
     {
         Dictionary<char, double> timeChanges = await AccountManager.GetTimeChangesAsync();
 
@@ -135,5 +135,10 @@ public sealed partial class SidePanel : UserControl
     private void IncomeButton_Click(object sender, RoutedEventArgs e)
     {
         OpenIncomeForm?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void CreateButton_Click(object sender, RoutedEventArgs e)
+    {
+        OpenCreateForm?.Invoke(this, EventArgs.Empty);
     }
 }

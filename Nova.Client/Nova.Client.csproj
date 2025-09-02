@@ -30,6 +30,7 @@
     <None Remove="Controls\Panels\SidePanel.xaml" />
     <None Remove="Controls\Panels\WealthDistributionPanel.xaml" />
     <None Remove="Controls\TimeChangeTab.xaml" />
+    <None Remove="Forms\CreateAccountFormPage.xaml" />
     <None Remove="Forms\IncomeFormPage.xaml" />
     <None Remove="Forms\InterestFormPage.xaml" />
     <None Remove="Forms\PaymentFormPage.xaml" />
@@ -68,6 +69,11 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Nova\Nova.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Forms\CreateAccountFormPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Forms\InterestFormPage.xaml">

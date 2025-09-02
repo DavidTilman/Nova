@@ -28,7 +28,7 @@ public sealed partial class InvestmentPanel : UserControl
         set => value
                 .OrderBy(x => -x.Quantity)
                 .ToList()
-                .ForEach((x) => InvestmentPresenterListView.Items.Add(new CrytpoPresenter(x)));
+                .ForEach((x) => CryptoPresenterListView.Items.Add(new CrytpoPresenter(x)));
     }
 
     public List<Trading212Position> InvestmentPositions

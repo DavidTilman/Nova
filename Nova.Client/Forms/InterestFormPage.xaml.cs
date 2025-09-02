@@ -69,7 +69,7 @@ public sealed partial class InterestFormPage : Page
     {
         foreach (Account account in await AccountManager.GetAccountsAsync())
         {
-            AccountsCombobox.Items.Add($"[{account.ID}] {account.AccountName} ({account.AccountProvider})");
+            AccountsCombobox.Items.Add(FormHelper.FormatAccountString(account));
         }
 
         InterestDatePicker.Date = DateTimeOffset.UtcNow;
