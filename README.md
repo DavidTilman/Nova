@@ -9,22 +9,14 @@ A modular, self-hosted finance dashboard built with WinUI3 for tracking net wort
 ## 🚀 Features
 
 - **Modular Card-Based Layout**  
-  Adaptive grid system with dynamic overlays for accounts, investments, crypto, and wealth breakdown.
+  Adaptive grid system with dynamic overlays for accounts, investments/crypto, and wealth breakdown.
 
-- **Real-Time Asset Metadata Integration**  
-  API support for Trading212, Kraken, and custom endpoints with cryptographic signature generation and bracket order logic.
+- **Real-Time Asset Data Integration**  
+  API support for Trading212 and Kraken.
+  PostgreSQL database for account data.
 
 - **Net Worth & Cashflow Tracking**  
-  Logs payments, transfers, and asset movements with historical snapshots and trend analysis.
-
-- **Error-Resilient Image Loading**  
-  Remote asset icons with fallback logic and validation for broken or missing metadata.
-
-- **Extensible Serialization Framework**  
-  Lookup tables and config-driven UI behavior for scalable customization.
-
-- **Automated Build & Deployment Scripts**  
-  PowerShell and batch automation for project validation, packaging, and release workflows.
+  Logs payments, transfers, and asset movements.
 
 ## 🧠 Tech Stack
 
