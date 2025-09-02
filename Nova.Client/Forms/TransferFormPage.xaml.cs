@@ -22,7 +22,7 @@ public sealed partial class TransferFormPage : Page
 {
     MainWindow? MainWindow;
 
-    List<string> AccountStrings = [];
+    readonly List<string> AccountStrings = [];
 
     public TransferFormPage()
     {
@@ -34,9 +34,7 @@ public sealed partial class TransferFormPage : Page
     {
         foreach (Account account in await AccountManager.GetAccountsAsync())
         {
-            if (account.AccountType is not AccountType.Current)
-                continue;
-            AccountStrings.Add($"[{account.ID}] {account.AccountName} ({account.AccountProvider})");
+            AccountStrings.Add(FormHelper.FormatAccountString(account));
         }
 
         FromAccountCombobox.ItemsSource = AccountStrings;

@@ -66,6 +66,7 @@
             <Button x:Name="UpdateButton" HorizontalAlignment="Stretch" Grid.Row="1" Grid.Column="0" Content="Update" Click="UpdateButton_Click"/>
             <Button x:Name="InterestButton" HorizontalAlignment="Stretch" Grid.Column="1" Grid.Row="1" Content="Interest" Click="InterestButton_Click"/>
             <Button x:Name="IncomeButton" HorizontalAlignment="Stretch" Grid.Column="0" Grid.Row="2" Content="Income" Click="IncomeButton_Click"/>
+            <Button x:Name="CreateButton" HorizontalAlignment="Stretch" Grid.Column="1" Grid.Row="2" Content="Create" Click="CreateButton_Click"/>
         </Grid>
     </Grid>
 </UserControl>

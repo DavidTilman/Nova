@@ -38,7 +38,7 @@ public sealed partial class PaymentFormPage : Page
         {
             if (account.AccountType is not AccountType.Current)
                 continue;
-            AccountsCombobox.Items.Add($"[{account.ID}] {account.AccountName} ({account.AccountProvider})");
+            AccountsCombobox.Items.Add(FormHelper.FormatAccountString(account));
         }
 
         PaymentDatePicker.Date = DateTimeOffset.UtcNow;

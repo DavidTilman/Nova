@@ -55,15 +55,22 @@ public sealed partial class MainWindow : Window
         MainWindowSidePanel.OpenUpdateForm += this.MainWindowSidePanel_OpenUpdateForm;
         MainWindowSidePanel.OpenIncomeForm += this.MainWindowSidePanel_OpenIncomeForm;
         MainWindowSidePanel.OpenInterestForm += this.MainWindowSidePanel_OpenInterestForm;
+        MainWindowSidePanel.OpenCreateForm += this.MainWindowSidePanel_OpenCreateForm;
 
         AccountManager.AccountChanged += (object? sender, EventArgs e) => this.ResetContent();
 
         this.ResetContent();
     }
 
+    private void MainWindowSidePanel_OpenCreateForm(object? sender, EventArgs e)
+    {
+        this.OpenOverlayPage(typeof(CreateAccountFormPage));
+    }
+
     private async void ResetContent()
     {
         this.MainPage.InvestmentPanel.ClearPositions();
+        this.MainWindowSidePanel.LoadDMQYChangesPanel();
 
         List<KrakenPosition> krakenBalance = await Kraken.GetBalanceAsync();
         if (krakenBalance != null)

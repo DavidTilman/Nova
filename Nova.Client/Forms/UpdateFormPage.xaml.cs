@@ -34,7 +34,7 @@ public sealed partial class UpdateFormPage : Page
         {
             if (account.AccountType is not AccountType.Investment and not AccountType.Asset)
                 continue;
-            AccountsCombobox.Items.Add($"[{account.ID}] {account.AccountName} ({account.AccountProvider})");
+            AccountsCombobox.Items.Add(FormHelper.FormatAccountString(account));
         }
 
         UpdateDatePicker.Date = DateTimeOffset.UtcNow;

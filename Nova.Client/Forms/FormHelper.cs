@@ -8,6 +8,11 @@ using System.Threading.Tasks;
 namespace Nova.Client.Forms;
 internal partial class FormHelper
 {
+    public static string FormatAccountString(Account account)
+    {
+        return $"[{account.ID}] {account.AccountName} ({account.AccountProvider})";
+    }
+
     public static int? ExtractID(string formattedAccountString)
     {
         if (string.IsNullOrWhiteSpace(formattedAccountString))

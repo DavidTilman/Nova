@@ -54,6 +54,8 @@ public static class AccountManager
         };
 
         await AddEventAsync(account, creation);
+
+        AccountChanged?.Invoke(null, EventArgs.Empty);
     }
 
     public static async Task<List<Account>> GetAccountsAsync()
