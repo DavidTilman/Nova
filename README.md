@@ -2,7 +2,8 @@
 
 A modular, self-hosted finance dashboard built with WinUI3 for tracking net worth, visualizing asset distribution, and integrating real-time data from trading APIs. Designed for extensibility, performance, and aesthetic clarity.
 
-<img width="1920" height="1032" alt="image" src="https://github.com/user-attachments/assets/0c0aa591-9f63-4ab9-bc52-644b6a815f5f" />
+<img width="1920" height="1032" alt="image" src="https://github.com/user-attachments/assets/62aaffe2-9b7c-4651-ad16-2b5a2d3c6c64" />
+
 *Dummy Data
 
 ## 🚀 Features
